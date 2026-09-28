@@ -1,6 +1,11 @@
 """Compare every exported file against fixtures and a fresh JSON round trip, offline."""
 
+import csv
+import difflib
+import hashlib
+import io
 import json
+import shutil
 import socket
 import tempfile
 from pathlib import Path
@@ -14,6 +19,57 @@ def deny_network(*args, **kwargs):
     raise AssertionError("Reproduction must not open a network connection")
 
 
+def mismatch(left, right, name):
+    """Retain exact bytes and diagnostics without relaxing the comparison."""
+    parent = ROOT / "artifacts/reproduction-failures"
+    parent.mkdir(parents=True, exist_ok=True)
+    target = Path(tempfile.mkdtemp(prefix="mismatch-", dir=parent))
+    for label, folder in [("expected", left), ("generated", right)]:
+        (target / label).mkdir()
+        for source in folder.iterdir():
+            if source.is_file():
+                shutil.copyfile(source, target / label / source.name)
+    a, b = [(folder / name).read_bytes() for folder in (left, right)]
+
+    def describe(raw):
+        return {
+            "sha256": hashlib.sha256(raw).hexdigest(),
+            "bytes": len(raw),
+            "crlf": raw.count(b"\r\n"),
+            "lone_lf": raw.count(b"\n") - raw.count(b"\r\n"),
+            "final_newline": raw.endswith(b"\n"),
+        }
+
+    details = {"file": name, "expected": describe(a), "generated": describe(b)}
+    details["first_byte_difference"] = next(
+        (i for i, (x, y) in enumerate(zip(a, b)) if x != y), min(len(a), len(b))
+    )
+    if name.endswith(".csv"):
+        aa, bb = [list(csv.reader(io.StringIO(raw.decode(), newline=""))) for raw in (a, b)]
+        details["parsed_cells_equal"] = aa == bb
+        details["differing_rows"] = [
+            {
+                "row": i + 1,
+                "expected": aa[i] if i < len(aa) else None,
+                "generated": bb[i] if i < len(bb) else None,
+            }
+            for i in range(max(len(aa), len(bb)))
+            if (aa[i] if i < len(aa) else None) != (bb[i] if i < len(bb) else None)
+        ]
+    (target / "comparison.json").write_text(json.dumps(details, indent=2) + "\n")
+    (target / "text.diff").write_text(
+        "".join(
+            difflib.unified_diff(
+                a.decode().splitlines(keepends=True),
+                b.decode().splitlines(keepends=True),
+                fromfile="expected/" + name,
+                tofile="generated/" + name,
+            )
+        )
+    )
+    raise AssertionError(f"{name}: exact-byte mismatch; retained in {target}")
+
+
 def compare(left, right):
     names = {p.name for p in left.iterdir() if p.is_file()}
     assert names == {p.name for p in right.iterdir() if p.is_file()}, "Export file set changed"
@@ -23,9 +79,11 @@ def compare(left, right):
             # Export time is expressly excluded from the deterministic run contract.
             a.pop("created_at_utc")
             b.pop("created_at_utc")
-            assert a == b, f"Envelope mismatch: {name}"
+            if a != b:
+                mismatch(left, right, name)
         else:
-            assert (left / name).read_bytes() == (right / name).read_bytes(), name
+            if (left / name).read_bytes() != (right / name).read_bytes():
+                mismatch(left, right, name)
     return len(names)
 
 

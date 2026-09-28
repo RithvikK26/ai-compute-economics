@@ -21,9 +21,26 @@ def discount_factors(annual_fraction: float, periods: int):
     return (1 + annual_fraction) ** (-np.arange(periods + 1) / 12)
 
 
+def deterministic_dot(left, right):
+    """Ordered float64 products and Neumaier sums; no BLAS reduction or fused multiply-add."""
+    total = 0.0
+    correction = 0.0
+    for a, b in zip(left, right, strict=True):
+        product = float(a) * float(b)
+        updated = total + product
+        if abs(total) >= abs(product):
+            correction += (total - updated) + product
+        else:
+            correction += (product - updated) + total
+        total = updated
+    return total + correction
+
+
 def cash_totals(cash_usd, annual_fraction: float):
     cash = np.asarray(cash_usd, dtype=float)
-    return float(cash @ discount_factors(annual_fraction, len(cash) - 1)), float(cash.sum())
+    return deterministic_dot(cash, discount_factors(annual_fraction, len(cash) - 1)), float(
+        cash.sum()
+    )
 
 
 def energy_kwh(nodes, hours, idle_kw, load_kw, execution_hours, auxiliary_kw, pue):
@@ -180,7 +197,7 @@ def evaluate_policy(
         add("ancillary:" + item.item_id, value)
     discount = discount_factors(run.discount_rate_fraction, T)
     cash = sum(categories.values())
-    pv = float(cash @ discount)
+    pv = deterministic_dot(cash, discount)
     tco = float(cash.sum())
     delivered = monthly(service["baseline_tokens"] + service["overflow_tokens"])
     unmet = monthly(service["unmet_tokens"])
@@ -202,7 +219,7 @@ def evaluate_policy(
     utilization = bounded_ratio(baseline_exec.sum(), paid_hours)
     available_util = bounded_ratio(baseline_exec.sum(), available_hours)
     unused = 1 - utilization if utilization is not None else None
-    work_pv = float(delivered @ discount[1:])
+    work_pv = deterministic_dot(delivered, discount[1:])
     total_work = float(delivered.sum())
     gpu_hours = float(run.gpu_count * (baseline_exec.sum() + od_exec.sum()))
     monthly_rows = []
@@ -292,7 +309,7 @@ def evaluate_policy(
         monthly_ledger=monthly_rows,
         block_ledger=block_rows,
         cost_ledger=cost_rows,
-        category_pv_usd={c: float(v @ discount) for c, v in categories.items()},
+        category_pv_usd={c: deterministic_dot(v, discount) for c, v in categories.items()},
         warnings=warnings,
         source_dependencies=[e.input_id for e in run.evidence],
     )

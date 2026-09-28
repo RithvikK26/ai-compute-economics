@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "created_at_utc": "2026-09-27T18:57:03.606457+00:00",
   "run_hash": "cf06baea668d9a4a42cf10d03f8a5f398e7b301e9596b48880973bba89deb44a",
-  "expected_output_sha256": "80b1e53b563bb89a62b8e7df37004003d05dec65f7e4e04dd3f149ad127bf629",
+  "expected_output_sha256": "b7198ff800c92bc5f78bbad839920431965ea613612e2f0bc8f304fc47dc695c",
   "run_input": {
     "schema_version": "1.0",
     "model_version": "0.1.0",

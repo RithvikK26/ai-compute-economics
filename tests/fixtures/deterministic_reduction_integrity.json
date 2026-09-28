@@ -1,0 +1,6 @@
+{
+  "file": "src/compute_economics/economics.py",
+  "original_sha256": "e7b7beb2656a02d4b2fef468e3a8570dda32c50ea7b00a8267c3a2dd1f79f4ad",
+  "approved_sha256": "4da12631c7eee084a0ed2271e82f3505244aef88572a931d60f2a7024820e89c",
+  "reason": "User-approved deterministic float64 PV reduction; all other 56 original hashes remain unchanged."
+}
