@@ -1,0 +1,1230 @@
+:toc:
+:toclevels: 4
+
+:sectnums:
+
+= MLPerf Inference Rules
+
+== Overview
+
+This document describes how to implement one or more benchmarks in the MLPerf
+Inference Suite and how to use those implementations to measure the performance
+of an ML system performing inference.
+
+There are separate rules for the submission, review, and publication process for all MLPerf benchmarks https://github.com/mlperf/policies/blob/master/submission_rules.adoc[here].
+
+The MLPerf name and logo are trademarks. In order to refer to a result using the
+MLPerf name, the result must conform to the letter and spirit of the rules
+specified in this document. The MLPerf organization reserves the right to solely
+determine if a use of its name or logo is acceptable.
+
+=== Definitions (read this section carefully)
+
+The following definitions are used throughout this document:
+
+A _sample_ is the unit on which inference is run. E.g., an image, or a sentence.
+
+A _query_ is a set of N samples that are issued to an inference system
+together. N is a positive integer. For example, a single query contains 8
+images.
+
+_Quality_ always refers to a model’s ability to produce “correct” outputs.
+
+A _system under test_ consists of a defined set of hardware and software
+resources that will be measured for performance.  The hardware resources may
+include processors, accelerators, memories, disks, and interconnect. The
+software resources may include an operating system, compilers, libraries, and
+drivers that significantly influences the running time of a benchmark.
+
+A _reference implementation_ is a specific implementation of a benchmark
+provided by the MLPerf organization.  The reference implementation is the
+canonical implementation of a benchmark. All valid submissions of a benchmark
+must be *equivalent* to the reference implementation.
+
+A _run_ is a complete execution of a benchmark implementation on a system under
+the control of the load generator that consists of completing a set of inference
+queries, including data pre- and post-processing, meeting a latency requirement
+and a quality requirement in accordance with a scenario.
+
+A _run result_ consists of the scenario-specific metric.
+
+== General rules
+
+The following rules apply to all benchmark implementations.
+
+=== Strive to be fair
+
+Benchmarking should be conducted to measure the framework and system performance
+as fairly as possible. Ethics and reputation matter.
+
+=== System and framework must be consistent
+
+The same system and framework must be used for a suite result or set of
+benchmark results reported in a single context.
+
+=== Benchmark implementations must be shared
+
+Source code used for the benchmark implementations must be open-sourced under a
+license that permits a commercial entity to freely use the implementation for
+benchmarking. The code must be available as long as the results are actively
+used.
+
+=== Non-determinism is restricted
+
+The only forms of acceptable non-determinism are:
+
+* Floating point operation order
+
+* Random traversal of the inputs
+
+* Rounding
+
+All random numbers must be based on fixed random seeds and a deterministic random
+number generator. The deterministic random number generator is the Mersenne Twister
+19937 generator (http://www.cplusplus.com/reference/random/mt19937/[std::mt19937]).
+The random seeds will be announced four weeks before the benchmark submission deadline.
+
+=== Benchmark detection is not allowed
+
+The framework and system should not detect and behave differently for
+benchmarks.
+
+=== Input-based optimization is not allowed
+
+The implementation should not encode any information about the content of the
+input dataset in any form.
+
+=== Replicability is mandatory
+
+Results that cannot be replicated are not valid results.
+
+=== Audit Process
+
+For audit process guidelines see link:MLPerf_Audit_Guidelines.adoc[MLPerf Audit Guidelines].
+
+In each round, up to two submissions will be audited: one at random from all submissions, and either zero or one selected by the review committee. A "submission" for audit purposes shall denote a combination of a submitter and a platform (equivalent to a line in the results table). Only Available submissions in Closed division are auditable.
+
+The process of random selection is in two stages: first a submitter is randomly chosen from all submitters with auditable submissions, then one of those submissions is randomly chosen. A submission is not a candidate for the randomly chosen audit if the system is equivalent to a system audited in the previous round. For the purposes of this rule, equivalent systems have the same CPU, NIC, accelerator, and accelerator count, with the same configuration of those components as per the system configuration JSON. For LoadGen Over Network submission the Networking must be the same. The review committee may determine that additional systems are equivalent to those audited in a previous round and exempt them from random audit. As a guidance for this exemption, if an accelerator is audited in one of the previous rounds, then the systems using the same accelerator can be excluded from random audit, if the aggregate system performance and the performance per accelerator are not more than 10% from those submitted during last audit time. For systems with power metrics, in addition to the performance, power efficiency must also be within 10% from the last audit time to be eligible for an exclusion from random audit. If any new result like a new model, an additional non-inferred scenario measurement or a new power measurement is submitted from the last audit time, then the exclusion is not applicable unless the review committee decides otherwise.
+
+If a submitter chosen for an audit finds it unfair, they can appeal to the MLCommons Executive Director to ensure fairness.
+
+During the review process, a github issue shall be opened where submitters can nominate systems for audit. Each nomination shall contain a reason, such as new HW or SW, unusual or interesting features, performance outside of expectations, etc. Review committee chairs evaluate the nominations and compile a list of systems at the end of the review period. Any systems with new accelerators are added to the list by the chairs if not nominated. The review committee will select a submission for audit by ranked choice voting using a simple majority. An option "No Selected Audit This Round" may be added if requested by a majority of the review committee.
+
+An auditor shall be chosen by the review committee who has no conflict of interest with the submitter. The process of auditor selection will take no more than 28 days from selection of the submitter.
+
+The burden is on the submitter to provide sufficient materials to demonstrate that the submission is compliant with the rules. Any such materials, including software, documentation, testing results and machine access will be provided to the auditor under NDA.
+
+The submitter shall provide two days of hardware access, at a time mutually agreed with the auditor. The first day will be used to run a pre-agreed list of tests, and to verify other system parameters if needed. The second day will allow the auditor to run additional tests based on outcome of the first day.
+
+The auditor shall write a report describing the work that was performed, a list of unresolved issues, and a recommendation on whether the submission is compliant.
+
+The submitter will provide the auditor an NDA within seven days of the auditor's selection. The auditor and submitter will negotiate and execute the NDA within 14 days of the auditor's selection.
+
+The auditor will submit their report to the submitter no more than thirty days after executing all relevant NDAs. The submitter will make any necessary redactions due to NDAs and forward the finalized report to the review committee within seven days. The auditor will confirm the accuracy of the forwarded report.
+
+Submissions that fail the audit at a material level will be moved to open or removed, by review committee decision.
+If a submission failed an audit that was delayed past publication, then any published material concerning the invalidated result is subject to the MLCommons https://github.com/mlcommons/policies/blob/master/MLPerf_Results_Messaging_Guidelines.adoc#12-violation-determination-remedies-and-penalties[rules for Violation Determination, Remedies and Penalties] for remedial action.
+
+MLCommons shall retain a library of past audit reports and send copies to MLCommons members, auditors, and potential auditors by request. Audit reports will not be further distributed without permission from the audited submitter.
+
+An audit is expected to be completed within a 90 day period. Audits failing to meet this timeline can be requested to be invalidated by the auditee. The final decision to accept such a request will be taken by the Working Group.
+
+== Scenarios
+
+In order to enable representative testing of a wide variety of inference
+platforms and use cases, MLPerf has defined four different scenarios as
+described in the table below.
+
+|===
+|Scenario |Query Generation |Duration |Samples/query |Latency Constraint |Tail Latency | Performance Metric
+|Single stream |LoadGen sends next query as soon as SUT completes the previous query | 600 seconds |1 |None |90%* | 90%-ile early-stopping latency estimate
+|Server/Interactive |LoadGen sends new queries to the SUT according to a Poisson distribution | 600 seconds |1 |Benchmark specific |99%* | Maximum Poisson throughput parameter supported
+|Offline |LoadGen sends all samples to the SUT at start in a single query | 1 query and 600 seconds | At least 24,576** |None |N/A | Measured throughput
+|Multistream | Loadgen sends next query, as soon as SUT completes the previous query | 600 seconds | 8 | None | 99%* | 99%-ile early-stopping latency estimate|
+|===
+
+ ** - If the dataset used for the accuracy run of the benchmark task is of size less than 24,576 say `N`, then the Offline scenario query only needs to have at least `N` samples.
+
+An early stopping criterion (described in more detail in <<appendix-early_stopping>>) allows for runs with a relatively small number of processed queries to be valid, with the penalty that the effective computed percentile will be slightly higher.  This penalty counteracts the increased variance inherent to runs with few queries, where there is a higher probability that a particular run will, by chance, report a lower latency than the system should reliably support.
+
+In the above table, tail latency percentiles with an asterisk represent the theoretical lower limit of measured percentile for runs processing a very large number of queries.  Submitters may opt to run for longer than the time listed in the "Duration" column, in order to decrease the effect of the early stopping penalty.
+
+For all large language models (LLMs), submitters are `NOT` allowed to sort samples beyond the boundary of a dataset, regardless of the selected "duration" or "samples/query".
+
+See the following table for a suggested starting point for how to set the minimum number of queries.
+
+|===
+|Tail Latency Percentile |Confidence Interval |Margin-of-Error |Inferences |Rounded Inferences
+|90%|99%|0.50%|23,886|3*2^13 = 24,576
+|95%|99%|0.25%|50,425|7*2^13 = 57,344
+|97%|99%|0.15%|85,811|11*2^13 = 90,112
+|99%|99%|0.05%|262,742|33*2^13 = 270,336
+|===
+
+A submission may comprise any combination of benchmark and scenario results.
+
+The number of runs required for each scenario is defined below:
+
+* Single Stream: 1
+
+* Server: 1
+
+* Offline: 1
+
+* Multistream: 1
+
+Each sample has the following definition:
+
+|===
+|Model| definition of one sample
+|YOLO11l	    |one image
+|3D UNET	        |one image
+|BERT	            |one sequence
+|DLRMv3	            |one request (containing one user history sequence and 2048 candidates)
+|WAN-2.2-T2V-A14B	            |a pair of positive and negative prompts
+|Llama2-70b	            |one sequence
+|Mixtral-8x7B            |one sequence
+|RGAT	            |one node id
+|Llama3.1-405B	            |one sequence
+|PointPainting             | five images and one lidar point cloud
+|Llama3.1-8B	            |one sequence
+|DeepSeek-r1            |one sequence
+|GPT-OSS-120B            |one sequence
+|Qwen3-VL-235B-A22B            |one prompt that contains some text and a base64-encoded image
+|Whisper	            |one audio
+|E2E-RAG	            |one multi-hop question
+|===
+
+== Benchmarks
+
+The MLPerf organization provides a reference implementation of each benchmark,
+which includes the following elements: Code that implements the model in a
+framework.  A plain text “README.md” file that describes:
+
+* Problem
+
+** Dataset/Environment
+
+** Publication/Attribution
+
+** Data pre- and post-processing
+
+** Performance, accuracy, and calibration data sets
+
+** Test data traversal order (CHECK)
+
+* Model
+
+** Publication/Attribution
+
+** List of layers
+
+** Weights and biases
+
+* Quality and latency
+
+** Quality target
+
+** Latency target(s)
+
+* Directions
+
+** Steps to configure machine
+
+** Steps to download and verify data
+
+** Steps to run and time
+
+A “download_dataset” script that downloads the accuracy, speed, and calibration
+datasets.
+
+A “verify_dataset” script that verifies the dataset against the checksum.
+
+A “run_and_time” script that executes the benchmark and reports the wall-clock
+time.
+
+=== Benchmarks
+
+==== Constraints for the Closed division
+
+The inference benchmark suite has two categories -- Datacenter and Edge (defined herein as non-datacenter) systems. The suite has a carrying capacity of 11 benchmarks i.e at any point in time, the number of benchmarks will not exceed 10 in each category. The minimum requirements for a datacenter system are defined below:
+
+===== Minimum requirements of a datacenter system
+====== ECC
+A Datacenter submission must use ECC in their DRAM and HBM memories, and ECC must be enabled for all performance and accuracy runs. No requirements are imposed on SRAM.
+
+====== Networking (from the v3.0 round)
+A Datacenter system must be equipped with all the necessary networking required by the system architecture described in the <<LoadGen Operation>> section.  The details of the networking components must be described in the appropriate field of the https://github.com/mlcommons/policies/blob/master/submission_rules.adoc#system_desc_id-json-metadata[System JSON].  All necessary networking must be populated if power is measured along with performance.
+
+
+The suites share multiple benchmarks, but characterize them with different requirements. Read the specifications carefully.
+The Datacenter suite includes the following benchmarks:
+
+|===
+|Area |Task |Model |Dataset |QSL Size |Quality |Server latency constraint
+|Vision |Medical image segmentation |3D UNET |KiTS 2019 | 42 | 99% of FP32 and 99.9% of FP32 (0.86330 mean DICE score) | N/A
+|Language |Summarization |Llama3.1-8B |CNN Dailymail (v3.0.0, max_seq_len=2048) | 13368 | 99% of FP32 and 99.9% of FP32 (rouge1=42.9865, rouge2=20.1235, rougeL=29.9881). Additionally, for both cases the total generation length of the texts should be more than 90% of the reference (gen_len=8167644)| Conversational category: TTFT/TPOT: 2000 ms/100 ms. Interactive category: TTFT/TPOT: 500 ms/30 ms.footnote:llm_ttft_tpot[]
+|Language |Question Answering |Llama2-70b |OpenOrca (max_seq_len=1024) | 24576 | 99.9% of FP32 (rouge1=44.4312, rouge2=22.0352, rougeL=28.6162). Additionally, the generation length of the tokens per sample should be more than 90% of the reference (tokens_per_sample=294.45)| Conversational category: TTFT/TPOT: 2000 ms/200 ms. Interactive category: TTFT/TPOT: 450 ms/40 ms.footnote:llm_ttft_tpot[]
+|Language |Text Generation |Llama3.1-405B |Subset of LongBench, LongDataCollections, Ruler, GovReport | 8313 | 99% of FP16 ((GovReport + LongDataCollections + 65 Sample from LongBench)rougeL=21.6666, (Remaining samples of the dataset)exact_match=90.1335). Additionally, for both cases tokens per sample should be between than 90% and 110% of the reference (tokens_per_sample=684.68)| Server: TTFT/TPOT: 6000 ms/175 ms. Interactive: TTFT/TPOT: 4500 ms/80 ms.footnote:llm_ttft_tpot[]
+|Language |Text Generation (Question Answering, Math and Code Generation) |Mixtral-8x7B |OpenOrca (5k samples, max_seq_len=2048), GSM8K (5k samples of the train split, max_seq_len=2048), MBXP (5k samples, max_seq_len=2048) | 15000 | 99% of FP16 ((OpenOrca)rouge1=45.5989, (OpenOrca)rouge2=23.3526, (OpenOrca)rougeL=30.4608, (gsm8k)Accuracy=73.66, (mbxp)Accuracy=60.16). Additionally, for both cases the tokens per sample should be between than 90% and 110% of the reference (tokens_per_sample=144.84)| TTFT/TPOT: 2000 ms/200 ms.footnote:llm_ttft_tpot[]
+|Language |Reasoning |DeepSeek-r1 |mlperf_deepseek_r1 | 4388 | 99% of FP16 (exact match 81.9132%).| Server: TTFT/TPOT: 2000 ms/80 ms. Interactive: TTFT/TPOT: 1500 ms/15 ms.footnote:llm_ttft_tpot[For LLM benchmarks, 2 latency metrics are collected - time to first token (TTFT) which measures the latency of the first token, and time per output token (TPOT) which measures the average interval between all the tokens generated.]
+|Language |Text Generation (Question Answering, Math and Code Generation) |GPT-OSS-120B |AIME25, GPQA Diamond, LiveCodeBench v6 | 6396 | 99% of 83.13%footnote:[GPT-OSS-120B evaluation uses three datasets with different repeat counts: AIME25 (8 repeats), GPQA Diamond (5 repeats), LiveCodeBench v6 (3 repeats). Final score = sum(dataset_correct / dataset_repeats).]| Server: TTFT/TPOT: 3000 ms/80 ms. Interactive: TTFT/TPOT: 2000 ms/20 ms.footnote:llm_ttft_tpot[]
+|Vision |Visual Language Model |Qwen3-VL-235B-A22B |Shopify Product Catalogue | 48289 | 99% of BF16 (Category Hierarchical F1 Score >= 0.7824)| Server: 12 s, Interactive: 1.5s
+|Commerce |Recommendation |DLRMv3 |Synthetic Streaming 100B Dataset | 34996 |99.9% of FP32 (NE=86.687%, Accuracy=69.651%, AUC=78.663%) | 80 ms
+|Generative |Text to video |WAN-2.2-T2V-A14B |VBench prompts | 248 |99% of BF16 (VBench score >= 69.7752) | N/A
+|Graph |Node classification |RGAT |IGBH | 788379 |99% of FP32 (72.86%) | N/A
+|Audio |Speech to Text |Whisper |LibriSpeech | 1633 |99% of FP32 and 99.9% of FP32 (WER=2.0671%) | N/A
+|Language |Retrieval Augmented Generation |E2E-RAG |FRAMES (multi-hop QA over Wikipedia) | 824 |97% of FP32  (LLM Judge score = ~35%; +/- ~3%) | N/A
+|===
+[[dc-required-scenarios]]
+Each Datacenter benchmark *requires* the following scenarios:
+
+|===
+|Area |Task |Required Scenarios
+|Vision |Image classification |Server, Offline
+|Vision |Medical image segmentation |Offline
+|Language |Summarization |(Server\| Interactive), Offline
+|Language |Question Answering |(Server\| Interactive), Offline
+|Language |Text Generation|(Server\| Interactive), Offline
+|Language |Reasoning |Server, Offline
+|Commerce |Recommendation |Server, Offline
+|Generative |Text to video |Single Stream, Offline
+|Vision |Visual Language Model |(Server\| Interactive), Offline
+|Graph |Node classification |Offline
+|Audio |Speech to Text | Offline
+|Language |Retrieval Augmented Generation |Offline
+|===
+[[edge-benchmarks]]
+The Edge suite includes the following benchmarks:
+
+|===
+|Area |Task |Model |Dataset |QSL Size |Quality
+|Vision |Image classification |Resnet50-v1.5 |ImageNet (224x224) | 1024 | 99% of FP32 (76.46%)
+|Vision |Object detection |YOLO11l |COCO 2017 MLPerf subset (1525 images, 80 classes) | 64 | 95% of FP32 (yolo-95: 0.5073 mAP) and 99 of FP32 (yolo-99: 0.5287 mAP)
+|Vision |Medical image segmentation |3D UNET |KiTS 2019 | 42 | 99% of FP32 and 99.9% of FP32 (0.86330 mean DICE score)
+|Language |Summarization |Llama3.1-8B |CNN Dailymail (v3.0.0, max_seq_len=2048) | 5000 | 99% of FP32 and 99.9% of FP32 (rouge1=42.9865, rouge2=20.1235, rougeL=29.9881). Additionally, for both cases the total generation length of the texts should be more than 90% of the reference (gen_len=8167644)
+|Language |Language processing |BERT |SQuAD v1.1 (max_seq_len=384) | 10833 | 99% of FP32 and 99.9% of FP32(f1_score=90.874%)
+|Automotive | 3D Object Detection | PointPainting | Waymo Open Dataset | 1024 | 99.9% of FP32 (0.5425 mAP)
+|Audio |Speech to Text |Whisper |LibriSpeech | 1633 |99% of FP32 and 99.9% of FP32 (WER=2.0671%) 
+|Language |Agentic Function Calling |Qwen3.6-27B |gorilla-llm/gorilla-eval-set (BFCL v4 single-turn: non_live, live, hallucination) | 995 | 97% of validated Q4_K_M reference, 3% one-sided band (single-turn overall=86.23% → threshold 83.64%, non_live-normalized=87.96% → threshold 85.32%)
+|===
+[[edge-required-scenarios]]
+Each Edge benchmark *requires* the following scenarios, and sometimes permit an optional scenario:
+|===
+|Area |Task |Required Scenarios
+|Vision |Image classification |Single Stream, Multistream, Offline
+|Vision |Object detection |Single Stream, Multistream, Offline
+|Vision |Medical image segmentation |Single Stream, Offline
+|Language |Language processing |Single Stream, Offline
+|Language |Summarization |Single Stream, Offline
+|Automotive | 3D object detection | Single Stream with 99.9% tail latency
+|Audio |Speech to Text | Offline
+|Language |Agentic Function Calling | Offline (accuracy-only)
+|===
+
+
+Edge submitters are allowed to infer a multistream result from single stream, and
+an offline result from either a single stream result or a measured multistream result,
+according to the following rules:
+
+- a multistream result inferred from a single stream result is 8 times the 99th percentile latency
+reported by loadgen. For example, if the single stream 99%th percentile latency is 25ms, the inferred multistream result is 200ms.
+
+- an offline result inferred from a multistream result is 8000 divided by the mean latency in milliseconds. For example,
+if the multistream result is 200ms, the inferred offline result is 40 img/s.
+
+- an offline result inferred from a single stream result is 1000 divided by the mean latency in milliseconds. For example,
+if the single stream result is 25ms, the inferred offline result is 40 img/s.
+
+The accuracy of an inferred result will be the same as the result from which it was inferred. When inferring a metric for the power table, the measured power used to calculate the metric is the same as for the base result
+
+To simplify automated processing of inferred results, the submitter should
+create copies of the directories for the inferred results under `results/`
+and `measurements/`, named according to the inferred result (either `offline` or `multistream`).
+
+Accuracy results must be reported to five significant figures with round to
+even. For example, 98.9995% should be recorded as 99.000%.
+
+For performance runs, the LoadGen will select queries uniformly at random (with
+replacement) from a test set. The minimum size of the performance test set for
+each benchmark is listed as 'QSL Size' in the table above. However, the accuracy
+ test must be run with one copy of the MLPerf specified validation dataset.
+
+For 3DUNet, the logical destination for the benchmark output is considered to be the network.
+
+==== Relaxed constraints for the Open division
+
+1. An Open benchmark must perform a task matching an existing Closed benchmark, and be substitutable in LoadGen for that benchmark.
+1. The validation dataset must be the same as used in an existing Closed benchmark, or must be pre-approved and added to the following list: ImageNet 2012 validation dataset for Image Classification; COCO 2017 validation dataset for Object Detection.
+When seeking such pre-approval, it is recommended that a potential submitter convincingly demonstrates the accuracy of the corresponding Closed model on the same validation dataset, which may involve retraining or finetuning the Closed model if required.
+1. An Open benchmark must use all the available samples in the dataset, such that it must be the same as those used in an existing Closed benchmark.
+1. Accuracy constraints are not applicable: instead the submission must report the accuracy obtained.
+1. Latency constraints are not applicable: instead the submission must report the latency constraints under which the reported performance was obtained.
+1. Scenario constraints are not applicable: any combination of scenarios is permitted.
+1. A open submission must be classified as "Available", "Preview", or "Research, Development, or Internal".
+1. The model can be of any origin (trained on any dataset, except the validation dataset; quantized in any way; sparsified in any way).
+
+==== Additional inference parameters
+
+For each of the following benchmarks it is necessary to use the following inference parameters in the closed division
+
+|===
+|Benchmark |Parameter |Value | Explanation
+|Summarization (Llama3.1-8B) |min_new_tokens |1 | Minimun number of new tokens to generate
+|Summarization (Llama3.1-8B) |max_new_tokens |128 | Maximum number of new tokens to generate
+|Summarization (Llama2-70b) |max_new_tokens |1024 | Maximum number of new tokens to generate
+|Text Generation (Llama3.1-405B) |min_new_tokens |2 | Minimun number of new tokens to generate
+|Text Generation (Llama3.1-405B) |max_new_tokens |20000 | Maximum number of new tokens to generate
+|Summarization (Mixtral-8x7B) |min_new_tokens |2 | Minimun number of new tokens to generate
+|Text Generation (Mixtral-8x7B) |max_new_tokens |1024 | Maximum number of new tokens to generate
+|Reasoning (DeepSeek) |min_new_tokens |1 | Minimun number of new tokens to generate
+|Reasoning (DeepSeek) |max_new_tokens |20000 | Maximum number of new tokens to generate
+|Text Generation (GPT-OSS-120B) |min_new_tokens |1 | Minimun number of new tokens to generate
+|Text Generation (GPT-OSS-120B) |max_new_tokens (accuracy) |32768 | Maximum number of new tokens to generate in accuracy mode
+|Text Generation (GPT-OSS-120B) |max_new_tokens (performance) |10000 | Maximum number of new tokens to generate in performance mode
+|===
+
+== Load Generator
+
+=== LoadGen Operation
+
+The LoadGen is provided in C++ with Python bindings and must be used by all
+submissions. The LoadGen is responsible for:
+
+* Generating the queries according to one of the scenarios.
+
+* Tracking the latency of queries.
+
+* Validating the accuracy of the results.
+
+* Computing final metrics.
+
+Latency is defined as the time from when the LoadGen was scheduled to pass a
+query to the SUT, to the time it receives a reply.
+
+* Single Stream: LoadGen measures the 90th percentile early-stopping latency estimate
+using a single test run. For the test run, LoadGen sends an initial query then
+continually sends the next query as soon as the previous query is processed.
+
+* Server: LoadGen determines the system throughput using multiple test
+runs. Each test run evaluates a specific throughput value in queries-per-second
+(QPS). For a specific throughput value, queries are generated at that QPS using
+a Poisson distribution. LoadGen will use a binary search to find a candidate
+value. If a run fails, it will reduce the value by a small delta then try again.
+
+* Offline: LoadGen measures throughput using a single test run. For the test
+run, LoadGen sends all samples at once in a single query.
+
+* Multistream: LoadGen measures the 99th percentile early-stopping latency estimate
+using a single test run. For the test run, LoadGen sends an initial query then
+continually sends the next query as soon as the previous query is processed.
+
+The run procedure is as follows:
+
+1. LoadGen signals system under test (SUT).
+
+2. SUT starts up and signals readiness.
+
+3. LoadGen starts clock and begins generating queries.
+
+4. LoadGen stops generating queries as soon as the benchmark-specific minimum time
+has elapsed, and the (optional, submitter-selected) minimum number of queries have
+been generated.
+
+5. LoadGen waits for all queries to complete, and errors if all queries fail to
+complete.
+
+6. LoadGen computes metrics for the run.
+
+The execution of LoadGen is restricted as follows:
+
+* LoadGen must run on the processor that most faithfully simulates queries
+  arriving from the most logical source, which is usually the network or an I/O
+  device such as a camera. For example, if the most logical source is the
+  network and the system is characterized as host - accelerator, then LoadGen
+  should run on the host unless the accelerator incorporates a NIC.
+
+* The trace generated by LoadGen must be stored in the DRAM that most faithfully simulates queries arriving
+  from the most logical source, which is usually the network or an I/O device such as a camera. It may be pinned.
+  Similarly, the response provided to Loadgen must be stored in the DRAM that most faithfully simulates transfer
+  to the most logical destination, which is a CPU process unless otherwise specified for the benchmark.
+  From 4.0, submitters must provide with their submission sufficient details of the system architecture and software to
+  show how the I/O bandwidth utilized by each benchmark/scenario combination can be transferred between the memory where the trace is stored and
+  the network or I/O device. Minimum bandwidths for each benchmark can be found in <<appendix-bw>>. All components mentioned in the system architecture must be present in the system during the run. A system architecture description must be provided along with the submission, which must include:
+
+** Bandwidth of each NIC and total number of NIC(s)
+** Description of the data path from the NIC(s) to the accelerator(s)
+** Specifications or measurements indicating that the path from the NIC to the memory in which loadgen data resides can sustain the required bandwidth
+
+* Caching values derived from the shapes of input tensors is allowed. Caching of any other queries, query parameters, or intermediate results is
+  prohibited. In particular, caching values derived from activations is prohibited.
+
+* The LoadGen must be compiled from a tagged approved revision of the mlperf/inference
+  GitHub repository without alteration.  Pull requests addressing portability
+  issues and adding new functionality are welcome.
+
+LoadGen generates queries based on trace. The trace is constructed by uniformly
+sampling (with replacement) from a library based on a fixed random seed and
+deterministic generator. The size of the library is listed in as 'QSL Size' in
+the 'Benchmarks' table above. The trace is usually pre-generated, but may
+optionally be incrementally generated if it does not fit in memory. LoadGen
+validates accuracy via a separate test run that use each sample in the test
+library exactly once but is otherwise identical to the above normal metric run.
+
+One LoadGen validation run is required for each submitted performance result
+even if two or more performance results share the same source code.
+
+Note: The same code must be run for both the accuracy and performance LoadGen modes. This means the same output should be passed in QuerySampleComplete in both modes.
+
+== Divisions
+
+There are three divisions of the benchmark suite, the Closed division, the Network division, and the Open
+division.
+
+=== Closed Division
+
+The Closed division requires using pre-processing, post-processing, and model
+that is equivalent to the reference or alternative implementation.  The closed
+division allows calibration for quantization and does not allow any retraining.
+
+The unqualified name “MLPerf” must be used when referring to a Closed Division
+suite result, e.g. “a MLPerf result of 4.5.”
+
+=== Network Division
+
+The Network division inherits all requirements from the Closed division and imposes further constraints.
+In the Network division the SUT is connected to the Loadgen system over a network fabric. The Query Dispatch Library (QDL) component is a submitter-implemented SUT proxy that runs on the Loadgen system. The Network division supports only the Datacenter suite.
+Non-conforming network submission should be submitted to Open category, under the Open category constraints.
+
+==== QDL Constraints
+
+* The QDL is not allowed to do any pre-processing. e.g. changing of precision, or data layout.
+* The QDL is not allowed to do any post-processing of the responses, e.g. gather, reduction, or ArgMax.
+* If an SUT compresses its output, the QDL must decompress the output. Decompression is a timed operation. No other post-processing in the QDL is allowed.
+* The QDL is not allowed to batch queries.
+* The QDL is not allowed to pad the data in queries.
+* The QDL is not allowed to cache queries or responses.
+* The QDL is implementing the network function of the LoadGen Node towards the SUT node and handles the required processing. E.G. padding of the payload as required by the network protocol.
+* The QDL should reflect a single SUT to the LoadGen. LoadGen operates with a single SUT.
+* The Name method's return value must contain the substring "Network SUT".
+* The Name method's implementation must include at least one round trip over the network. The Name method must not return until the round trip is complete.
+* The QDL must query each SUT Node for its name and aggregate the responses in the Name Method. Each SUT Node must have a unique name.
+
+The submission must include source code for the QDL implementation above the level of the OSI session layer (RPC or equivalent), and sufficient documentation of the session layer API that a reader of that code can understand what data is being marshalled and sent over the network for each query.
+
+==== General Constraints
+
+MLPerf distinguishes between fabric interconnects and bus interconnects. Fabric interconnects are required and bus interconnects are forbidden.
+
+A fabric interconnect must:
+
+1. Work as out-of-the-box chassis-to-chassis interconnect
+1. Use wireless, copper, or fiber-optics media
+1. Suitable for connecting systems above 10 meters distance
+1. Use switch topology
+1. Be highly scalable, reliable, and fault-tolerant
+
+Currently permitted fabric interconnects are Ethernet, IEEE802.11, Infiniband, and 3GPP.
+
+Examples of forbidden bus interconnect include: PCIe/CXL/CCIX, Hypertransport, NVLink, QPI, UPI, and ICI (interchip interconnect).
+
+Additionally, any interconnect not listed in the permitted list is forbidden unless clearance is first obtained from the MLPerf Inference WG.
+
+System Topology: The SUT and QDL must run on physically separate and distinct systems. The SUT can contain multiple Nodes. The systems can be connected point to point or through network elements like switches.
+
+Fabric and protocol must be reported in the submission metadata. Submission metadata must be sufficient to determine OSI layers one through four of the submission's network stack.
+
+==== SUT over the Network and Setup Constraints
+
+* SUT parameters and configuration must be uniquely and specifically named in the submission results.
+* Everything outside the LoadGen node should be considered as part of the SUT, for instance for counting power and latency. As an example, components outside the nodes like a switch or load balancer should be considered part of the SUT.
+* All queries must be transferred over the network, carrying the inference data, for inference execution at the SUT. All responses must be transferred back over the network, carrying the inference responses.
+* Caching/Storing of the queries and inference data or responses for further use at the SUT is disallowed. It is allowed to cache/store other data like Neural Network weights or Neural Network executable.
+* SUT can do the required pre-processing of the data, e.g. Batching, Padding, processing of the requests (precision, data layout), compression, decompression. SUT can do the required post processing functions e.g. gather, reduction or ArgMax.
+* The report must contain network interface characteristics for both the Loadgen and SUT systems, and every other component through which data passes between Loadgen and SUT. The information must be sufficient for reproducibility.
+* A system diagram must be included in the submission that shows how the components between the LoadGen node and the SUT nodes are connected, accompanied by any text necessary for another submitter to understand the diagram.
+* For "Available" submissions, for reproducibility, it is required to specify software version of all components, hardware configurations, software stacks, dockers, and settings of all components and stacks.
+
+==== Benchmarks and QSL Preprocessing
+
+Data formats for inputs and outputs are allowed to be compressed for network transmission, providing a tradeoff between compute and network bandwidth. Data transferred between the LoadGen system and the SUT can be compressed using one of the options from the following table for each benchmark. Compression is performed by QSL, and is untimed. The compression scheme needs approval by the Working Group, allowing compression schemes that will be suitable for production, so for example, very asymmetric schemes are not expected to be approved.
+
+|===
+|*Area* | *Task* | *Model* | *QSL side PreProcessing^(1,2,3)^*
+|Vision | Image classification | Resnet50-v1.5 | Allow one of the following compression options for pre-processing:
+
+1) No compression 2) Lossless compression 3) The original compression of the dataset (JPEG)
+|Vision | Object detection (large) | Retinanet | Allow one of the following compression options for pre-processing:
+
+1) No compression 2) Lossless compression 3) The original compression of the dataset (For the Coco dataset JPEG, for Open Images JPEG)
+|Vision | Medical image segmentation | 3D UNET | Allow one of the following compression options:
+
+1) No compression 2) Lossless compression
+
+This rule applies both for the QSL pre-processing and for post-processing function allowed in QDL for this benchmark results.
+
+|Language | Language processing | BERT-large | Input is either Token IDs, Input Masks and Segment IDs or just the Token IDs (generating the other tensors at the SUT in a timed operation).
+
+1) No compression 2) Lossless compression
+
+|Language | Summarization | Llama3.1-8B | Input is either Token IDs, Input Masks and Input Lengths or just the Token IDs (the other tensors are generated at the SUT in a timed operation).
+
+No compression allowed.
+|Language | Question Answering | Llama2-70b | Input is either Token IDs, Input Masks and Input Lengths or just the Token IDs (the other tensors are generated at the SUT in a timed operation).
+
+No compression allowed.
+|Language | Question Answering | Llama3.1-405B | Input is either Token IDs, Input Masks and Input Lengths or just the Token IDs (the other tensors are generated at the SUT in a timed operation).
+
+No compression allowed.
+|Language | Text Generation | Mixtral-8x7B | Input is either Token IDs, Input Masks and Input Lengths or just the Token IDs (the other tensors are generated at the SUT in a timed operation).
+
+No compression allowed.
+|Language | Reasoning | DeepSeek-r1 | Input is either Token IDs, Input Masks and Input Lengths or just the Token IDs (the other tensors are generated at the SUT in a timed operation).
+
+No compression allowed.
+|Commerce | Recommendation | DLRMv3 | QDL sends query (Batch of samples).
+
+Allow one of the following compression options for pre-processing:
+
+1) No compression 2) Lossless compression
+
+Allow any lossless compression that will be suitable for production use.
+In Server mode allow per-Query compression.
+|Generative | Text to video | WAN-2.2-T2V-A14B | No compression allowed.
+|Vision | Visual Language Model | Qwen3-VL-235B-A22B | No compression allowed.
+
+|Graph | Node Classification | RGAT | No compression allowed.
+
+|===
+
+. Compression scheme needs pre-approval, at least two weeks before a submission deadline.
+. A compression scheme may use information from the training set, but not the validation set (ex: check index probability).
+. Only per-Sample compression is allowed, except for DLRMv3 Server mode where per-Query compression is allowed.
+
+=== Open Division
+
+The Open division allows using arbitrary pre- or post-processing and model,
+including retraining.  The qualified name “MLPerf Open” must be used when
+referring to an Open Division suite result, e.g. “a MLPerf Open result of 7.2.”
+
+https://github.com/mlperf/inference_policies/blob/master/inference_retraining_rules.adoc[Restricted retraining rules]
+characterize a subset of Open division retraining possibilities that are expected to be straightforward for customers to use.
+The restrictions are optional; conformance will be indicated by a tag on the submission.
+
+== Data Sets
+
+For each benchmark, MLPerf will provide pointers to:
+
+* An accuracy data set, to be used to determine whether a submission meets the
+  quality target, and used as a validation set
+
+* A speed/performance data set that is a subset of the accuracy data set to be
+  used to measure performance
+
+For each benchmark, MLPerf will provide pointers to:
+
+* A calibration data set, to be used for quantization (see quantization
+  section), that is a small subset of the training data set used to generate the
+  weights
+
+Each reference implementation shall include a script to verify the datasets
+using a checksum. The dataset must be unchanged at the start of each run.
+
+=== Pre- and post-processing
+
+As input, before preprocessing:
+
+* all imaging benchmarks take uncropped uncompressed bitmap
+
+* BERT, Llama2-70b, Llama3.1-405B, Mixtral-8x7B, Llama3.1-8B and DeepSeek-r1 take texts
+
+* RNN-T and Whisper takes a waveform
+
+* DLRMv3 takes a request containing one user and up to 100 candidates
+
+Sample-independent pre-processing that matches the reference model is
+untimed. However, it must be pre-approved and added to the following list:
+
+* May resize to processed size (e.g. SSD-large)
+
+* May reorder channels / do arbitrary transpositions
+
+* May pad to arbitrary size (don’t be creative)
+
+* May do a single, consistent crop
+
+* Mean subtraction and normalization provided reference model expect those to be
+  done
+
+* May convert data among numerical formats
+
+* May convert to token ids from texts using the reference tokenizer
+
+Any other pre- and post-processing time is included in the wall-clock time for a
+run result.
+
+=== Test Data Traversal Order
+
+Test data is determined by the LoadGen. For scenarios where processing multiple
+samples can occur (i.e., and offline), any ordering is
+allowed subject to latency requirements.
+
+== Model
+
+CLOSED: MLPerf provides a reference implementation of each benchmark. The benchmark implementation must use a model that is
+equivalent, as defined in these rules, to the model used in the reference implementation.
+
+OPEN: The benchmark implementation may use a different model to perform the same
+task. Retraining is allowed.
+
+=== Weight Definition and Quantization
+
+CLOSED: MLPerf will provide trained weights and biases in fp16/fp32 format for both
+the reference and alternative implementations.
+
+MLPerf will provide a calibration data set for all models.
+Submitters may do arbitrary purely mathematical, reproducible quantization
+using only the calibration data and weight and bias tensors from the benchmark
+owner provided model to any numerical format
+that achieves the desired quality. The quantization method must be publicly
+described at a level where it could be reproduced.
+
+To be considered principled, the description of the quantization method must be
+much much smaller than the non-zero weights it produces.
+
+Calibration is allowed and must only use the calibration data set provided by
+the benchmark owner. Submitters may choose to use only a subset of the calibration data set.
+
+Additionally, MLPerf may provide an INT8 reference for some models. Model weights and
+input activations are scaled per tensor, and must preserve the same shape modulo
+padding. Convolution layers are allowed to be in either NCHW or NHWC format.  No
+other retraining is allowed.
+
+OPEN: Weights and biases must be initialized to the same values for each run,
+any quantization scheme is allowed that achieves the desired quality.
+
+=== Model Equivalence
+
+All implementations are allowed as long as the latency and accuracy bounds are
+met and the reference weights are used. Reference weights may be modified
+according to the quantization rules.
+
+Examples of allowed techniques include, but are not limited to:
+
+* Arbitrary frameworks and runtimes: TensorFlow, TensorFlow-lite, ONNX, PyTorch,
+  etc, provided they conform to the rest of the rules
+
+* Running any given control flow or operations on or off an accelerator
+
+* Arbitrary data arrangement
+
+* Different in-memory representations of inputs, weights, activations, and outputs
+
+* Variation in matrix-multiplication or convolution algorithm provided the
+  algorithm produces asymptotically accurate results when evaluated with
+  asymptotic precision
+
+* Mathematically equivalent transformations (e.g. Tanh versus Logistic, ReluX
+  versus ReluY, any linear transformation of an activation function)
+
+* Approximations (e.g. replacing a transcendental function with a polynomial)
+
+* Processing queries out-of-order within discretion provided by scenario
+
+* Replacing dense operations with mathematically equivalent sparse operations
+
+* Hand picking different numerical precisions for different operations
+
+* Fusing or unfusing operations
+
+* Dynamically switching between one or more batch sizes
+
+* Different implementations based on scenario (e.g., single stream vs. offline) or dynamically determined batch size or input size
+
+* Mixture of experts combining differently quantized weights
+
+* Stochastic quantization algorithms with seeds for reproducibility
+
+* Reducing ImageNet classifiers with 1001 classes to 1000 classes
+
+* Dead code elimination
+
+* Sorting samples in a query when it improves performance even when
+  all samples are distinct
+
+* Incorporating explicit statistical information about the calibration set
+  (eg. min, max, mean, distribution)
+
+* Empirical performance and accuracy tuning based on the performance and accuracy
+  set (eg. selecting batch sizes or numerics experimentally)
+
+* Sorting an embedding table based on frequency of access in the training set.
+  (Submitters should include in their submission details of how the ordering was
+  derived.)
+
+* Speculative decoding is allowed subject to constraints in <<appendix-speculative-decoding>>, only for certain LLM workloads including - DeepSeek-r1-Interactive, GPT-OSS-120B-Interactive, Qwen3.6-27B Edge-Agentic.
+
+The following techniques are disallowed:
+
+* Wholesale weight replacement or supplements
+
+* Discarding non-zero weight elements, including pruning
+
+* Caching queries or responses
+
+* Coalescing identical queries
+
+* Modifying weights during the timed portion of an inference run (no online
+  learning or related techniques)
+
+* Weight quantization algorithms that are similar in size to the non-zero
+  weights they produce
+
+* Hard coding the total number of queries
+
+* Techniques that boost performance for fixed length experiments but are
+  inapplicable to long-running services except in the offline scenario
+
+* Using knowledge of the LoadGen implementation to predict upcoming lulls or
+  spikes in the server scenario
+
+* Treating beams in a beam search differently. For example, employing different
+  precision for different beams
+
+* Changing the number of beams per beam search relative to the reference
+
+* Incorporating explicit statistical information about the performance or
+  accuracy sets (eg. min, max, mean, distribution)
+
+* Techniques that take advantage of upsampled images. For example,
+  downsampling inputs and kernels for the first convolution.
+
+* Techniques that only improve performance when there are identical
+  samples in a query. For example, sorting samples in SSD and R-GAT.
+
+* Techniques that only improve performance by artificially creating batches of identical samples. Sorting samples beyond the boundary of a dataset is prohibited for all (L|V)LM workloads such as - Llama2-70b, Llama2-70b-Interactive, Llama3.1-405B, DeepSeek-r1, Qwen3-VL-235B-A22B, GPT-OSS-120B, Llama3.1-8B and Mixtral-8x7B.
+
+* Modifying the sample duration loaded by a fixed input-length audio model (ex. a shorter audio sample should be padded to match the fixed input-length).
+
+== FAQ
+
+Q: Do I have to use the reference implementation framework?
+
+A: No, you can use another framework provided that it matches the reference in
+the required areas.
+
+Q: Do I have to use the reference implementation scripts?
+
+A: No, you don’t have to use the reference scripts. The reference is there to
+settle conformance questions - with a few exceptions, a submission to the closed
+division must match what the reference is doing.
+
+Q: Can I submit a single benchmark (e.g., object detection) in a suite (e.g., data center), or do I have to submit all benchmarks?
+
+A: You can submit any of the benchmarks that are interesting, from just one benchmark to the entire set of benchmarks. Keep in mind that submitting one benchmark typically requires running several scenarios as described in Section 4. For example, submitting object detection in the data center suite requires the server and offline scenario and submitting object detection in the edge suite requires the single stream and offline scenarios.
+
+Q: Why does a run require so many individual inference queries?
+
+A: The numbers were selected to be sufficiently large to statistically verify
+that the system meets the latency requirements.
+
+Q: For my submission, I am going to use a different model format (e.g., ONNX vs
+TensorFlow Lite).  Should the conversion routine/script be included in the
+submission? Or is it sufficient to submit the converted model?
+
+A: The goal is reproducibility, so you should include the conversion
+routine/scripts.
+
+Q: Is it permissible to exceed both the minimum number of queries and minimum time duration in a valid test run?
+
+A: Yes. However, for all large language models (LLMs), submitters are `NOT` allowed to sort samples beyond the boundary of a dataset, regardless of the selected "duration" or "samples/query".
+
+Q: Can we give the driver a hint to preload the image data to somewhere closer to the accelerator?
+
+A: No.
+
+Q: Can we preload image data somewhere closer to the accelerator that is mapped into host memory?
+
+A: No.
+
+Q: Can we preload image data in host memory somewhere that is mapped into accelerator memory?
+
+A: Yes, provided the image data isn't eventually cached on the device.
+
+Q: For the server scenario, there are 'Scheduled samples per second', 'Completed samples per second', and the user input target QPS. Which one is reported as the final metric?
+
+A: Scheduled samples per second
+
+Q: What can I cache based on the query indices?
+
+A: Query indices are an artifact of using a finite set of samples to represent an infinite set, and would have no counterpart in production scenarios. As such, the system under test should not cache any information associated with query indices.
+
+=== SSD
+
+Q: Is non-maximal suppression (NMS) timed?
+
+A: Yes. NMS is a per image operation. NMS is used to make sure that in object
+detection, a particular object is identified only once. Production systems need
+NMS to ensure high-quality inference.
+
+Q: Is COCO eval timed?
+
+A: No. COCO eval compares the proposed boxes and classes in all the images
+against ground truth in COCO dataset. COCO eval is not possible in production.
+
+=== Softmax
+
+Q: In classification and segmentation models (ResNet50, 3DUNet) the final softmax does not change the order of class probabilities. Can it be omitted?
+
+A: Yes.
+
+=== DLRMv3
+Q: Why must DLRMv3 queries be issued in time series order rather than randomized?
+
+A: DLRMv3 is designed to capture sequential recommendation characteristics where users make incremental visits over time. The dataset is organized as a time series of user interactions across 100 timestamps, and queries must be issued in this temporal order to accurately represent real-world streaming recommendation scenarios. This time series ordering also enables potential future implementations of KV-cache optimizations, where user history embeddings can be cached and incrementally updated as new interactions arrive, similar to how KV-cache is used in LLM inference.
+
+=== LLM Benchmarks
+
+Q: Are submitters allowed to change the maximum output token length to be less than the benchmark reference?
+No, submitter implementations must adhere to the specificied maximum output token length as in the benchmark reference. Truncating output tokens to boost performance or meet accuracy is not permitted.
+
+Q: What algorithm is used for the auto-regressive decoding loop?
+
+A: The algorithms used by the benchmarks (greedy search, beam search, and sampling) are described at a high level here: https://huggingface.co/blog/how-to-generate. Specifically, Llama2-70b, Llama3.1-405B, Mixtral-8x7B, DeepSeek-r1, and Llama3.1-8B use greedy search. GPT-OSS-120B and Qwen3-VL-235B-A22B uses sampling with temperature=1.0, top_p=1.0, and top_k disabled.
+
+Q: MLPerf disallows caching queries. Is using a KV-cache in decoding allowed?
+
+A: Using a KV-cache is allowed in the same way as it is included in the reference model, where it does not apply across queries. A KV-cache row is a tensor that must handle the execution of a single inference query. When a KV-cache is used, every input query must be computed in its entirety.
+
+Q: Is it allowed to not use a KV-cache or use it partially?
+
+A: Yes, KV-cache is an optional optimization. It is not required to use a KV-cache, but if you do, your implementation must adhere to the reference implementation. If you do not use a KV-cache, the corresponding values must be rematerialized during the decoding process.
+
+Q: Is it allowed to store continuous keys and values in non-contiguous memory space for the KV-cache, i.e. PagedAttention?
+
+A: Yes, it is allowed as long as the KV-cache block is reused only within the batch of queries. A high level explanation of PagedAttention can be found here: https://blog.vllm.ai/2023/06/20/vllm.html.
+
+Q: How does quantization and pruning apply to the KV-cache?
+
+A: The entries of the KV-cache should be handled in the same way as the activations of a forward pass. They can be quantized according to the quantization rules. However, according to the model equivalence rules, they cannot be pruned (or sparsified). It should be noted that pruning is different from not using a KV-cache (or caching only some entries while rematerializing others); pruning alters the computation and the model's predictions.
+
+Q: How does query batching affect the KV-cache usage?
+
+A: The size of the KV-cache is determined by the batch size. The KV-cache size can also be cached across queries, in accordance with the rule of allowing caching of sizes and shapes.
+
+Q: Is it allowed to apply continuous batching (or dynamic batching) for auto-generative benchmarks?
+
+A: Yes. Continuous batching is explained at a high level here: https://www.anyscale.com/blog/continuous-batching-llm-inference.
+
+=== RGAT
+
+Q: Is loading the node neighbors a timed operation?
+
+A: Yes, this is the main operation of this benchmark
+
+=== Whisper
+
+Q: Whisper's native audio input duration is fixed at 30 seconds. Is it permitted to modify the loaded duration to match the sample's specific duration?
+
+A: No, it is not permitted to modify the loaded duration even if continuing to meet the model's accuracy threshold. Samples must be zero-padded to ensure consistent computation and accuracy criteria.
+
+=== E2E-RAG
+
+Q: What is the E2E-RAG benchmark?
+
+A: E2E-RAG is an end-to-end retrieval-augmented generation benchmark for multi-hop question answering on the FRAMES Wikipedia dataset. It evaluates the complete RAG pipeline including document retrieval, reranking, and answer generation. The benchmark uses dense vector retrieval with FAISS indexing, ColBERTv2 reranking, and iterative multi-shot retrieval with LLM-driven query decomposition.
+
+Q: What is the RAG-DB setup?
+
+A: Database construction is a critical bottleneck in RAG system deployment, often taking hours or days for large document collections in real world.
+   The RAG-DB benchmarks the database construction step required for all RAG workloads. This test measures the performance of building the vector database from Wikipedia documents and creating the FAISS HNSW index. It is a one-time measured operation that ensures the database remains consistent across tests.
+
+Q: Why does the accuracy vary in accuracy tests?
+
+A: Due to the non-determinism of GPT-OSS reasoning models, result variation in one step can roll up into a bigger variation as more calls to GPT-OSS are made. Currently, an accuracy range of ~35% (+/- ~3%) is observed due to this non-determinism. The non-deterministic behavior comes from the sampling-based generation (temperature=1.0, top_p=1.0) used by GPT-OSS-120B.
+
+Q: Why is the accuracy so low for RAG-QnA?
+
+A: The FRAMES benchmark oracle accuracy with GPT-OSS models is 68%. However, the actual LLM judge accuracy of this workload is range of ~35% (+/- ~3%). This discrepancy is due to multiple factors:
+
+* Embedding quality and approximation errors in vector retrieval
+* Knowledge hierarchy and multi-hop reasoning challenges in complex questions
+* Reranking model limitations in identifying relevant documents
+* Context window limitations of models for retrieval.
+
+Efforts made in multi-shot retrieval improved the accuracy from 20% to range of ~35% (+/- ~3%) by iteratively decomposing queries and retrieving relevant documents across multiple rounds. 
+
+Above accuracy is for the first instantiation of the benchmark release targetting MLPerf 6.1 Submissions. This will be revisited for further improvement going forward. 
+
+Q: What are the key components of the E2E-RAG workload?
+
+A: The key components are:
+
+1. Vector Database Construction: Building FAISS HNSW index from Wikipedia documents using embedding models (e5-base-v2)
+2. Query Writer (LLM): Using GPT-OSS-120B to decompose complex multi-hop questions into sub-queries for targeted retrieval
+3. Retrieval: Dense vector search using FAISS HNSW index to retrieve relevant documents for each sub-query
+4. Reranking: ColBERTv2 model for re-scoring and improving retrieved document relevance
+5. Document Grading: Using GPT-OSS-20B to assess binary relevance (0/1) of retrieved documents against the question
+6. Sufficiency Checker: Using GPT-OSS-120B to determine if the kept documents contain sufficient information to answer the question
+7. Answer Generation: Using GPT-OSS-120B for final answer generation from relevant documents
+8. Evaluation: Answer accuracy assessment with LLM as a judge (Llama3.1-8B)
+
+Q: What tasks are timed in E2E-RAG?
+
+A: The following tasks are timed:
+
+* Document embedding generation (during database construction)
+* Vector database building (FAISS index creation)
+* Query embedding generation
+* Vector search/retrieval
+* Reranking with ColBERTv2
+* LLM inference for query decomposition, document grading, sufficiency checking, and answer generation
+* Full end-to-end question answering pipeline
+
+Loading of models (embedding model, reranker, LLM) is not timed.
+
+Q: What is the difference between performance tests and accuracy tests in RAG-QnA?
+
+A: Performance tests measure system throughput of the RAG pipeline using cached LLM responses to ensure deterministic workloads for run-to-run comparisons. Measurement is done from question input to answer generation (end-to-end pipeline timing).
+   Accuracy tests measure answer quality using live LLM inference to generate real-time responses.
+   In both tests, the LLM is invoked to perform the task. However, in performance tests, the actual LLM-generated output is replaced with cached responses for run-to-run consistency, while the LLM call timing is still measured.  
+
+A: The benchmark supports multiple hardware accelerators via the `--device` flag:
+
+* NVIDIA GPUs (cuda)
+* AMD GPUs (rocm)
+* Intel XPUs (xpu)
+* Intel HPUs (hpu)
+* CPU
+
+Q: What is the maximum number of retrieval iterations ?
+
+A: The maximum number of retrieval iterations is also referred to as multi-hop or multi-shot in this workload, and it is limited to 5. All submitters are required to set it to 5.
+
+Q: Can I cache query results or LLM responses across different queries?
+
+A: No. In accordance with MLPerf inference rules, caching across queries is not permitted. Each query must be processed independently. However, within a single query, KV-cache and other standard optimizations are allowed. The performance test mode's response caching is specifically designed to replay the same workload for performance comparisons, not to avoid computation.
+
+Q: How is the FRAMES dataset structured?
+
+A: The FRAMES dataset is a tab-separated values (TSV) file containing multi-hop questions and their answer links to Wikipedia pages. Each query requires information from multiple Wikipedia articles to answer correctly. The dataset can be filtered by difficulty level using the `--difficulty` flag, which filters queries based on the minimum number of answer links required.
+
+Q: Is it allowed to preprocess or cache the vector database?
+
+A: Yes. Building the vector database is a measured one-time operation. The database can be saved and reused across multiple runs using the `--database` flag. 
+Loading a pre-built database is permitted and only the query processing is measured during the question-answering workload. 
+Submitters must ensure they are using the same database that is generated by the one-time measured operation and not a separately optimized or modified version.
+
+Q: Can I use quantized models for embeddings or reranking?
+
+A: Yes, quantization is allowed for the embedding and reranking models according to the standard quantization rules. The quantization must maintain model equivalence and meet the accuracy threshold. KV-cache entries should be handled according to the activation quantization rules.
+
+Q: Why is the submitter required to submit the detailed log JSON file?
+
+A: Since the existing compliance tests do not have a mechanism to verify the correctness of the E2E-RAG workload execution, the detailed log JSON file will be used by reviewers to determine if the test was run fairly. This file contains information about all LLM calls, retrieved documents, query decompositions, and intermediate steps in the multi-shot retrieval process, allowing reviewers to verify compliance with the benchmark rules.
+
+Q: What sampling strategy is used for questions in the dataset?
+
+A: For database construction (RAG-DB), questions are processed in the order they appear in the FRAMES dataset to maintain consistency in the graph structure.
+   For the question-answering workload (RAG-QnA), Loadgen applies seed-based random shuffling to input questions for both accuracy and performance runs, ensuring deterministic but randomized query order across runs.
+
+Q: What is the indexing algorithm and required parameters restriction for RAG-DB?
+
+A: The vector database must be built using FAISS HNSW (Hierarchical Navigable Small World) with the following fixed parameters:
+----
+M = 32
+index = faiss.IndexHNSWFlat(dimension, M)
+index.hnsw.efConstruction = 200
+index.hnsw.efSearch = 100
+----
+Since a retrieval accuracy threshold has not yet been established, submitters are required to use these exact parameters to ensure result parity across submissions.
+
+=== Audit
+
+Q: What characteristics of my submission will make it more likely to be audited?
+
+A: A submission is more likely to be audited if:
+
+* the submission's performance is not consistent with the known or expected characteristics of the hardware
+* the review committee lacks insight into how the measured performance was achieved
+* the hardware and software is not reasonably available to the general public
+
+Q: What should I be expected to provide for audit?
+
+A: You should expect to provide the following:
+
+* An explanation of the hardware and software mechanisms required to achieve the measured performance
+* Hardware access to enable the auditor to replicate submission runs (or partial runs in the case of very long-running submission)
+* Hardware access to enable performance tests through the APIs used in the submission, to verify that performance-critical elements perform as claimed
+
+The auditor may also request source code access to binary elements of the submission software. Where information or access is not provided, the auditor's report will list the issues that could not be resolved.
+
+Q: Is it expected that an audit will be concluded during the review period?
+A: No. We should try to finish the audit before the publication date.
+
+[[appendix-early_stopping]]
+[appendix]
+== Early Stopping Criterion
+
+The early stopping criterion allows for systems to process a smaller number of queries during their runs than previously allowed.  In particular, given a desired tail latency p, tolerance d, and confidence c, we determine the required number of queries to process as a function of the number of seen overlatency queries. If we have processed at least this many queries, we are able to stop processing queries early.  See the final section of this appendix for a more detailed description of the algorithm.
+
+
+=== Motivating Example
+
+Processing more queries allows us to better estimate the percentage of the time a system passes a given latency bound, p. However, if p is particularly high, then with fewer queries we will have a larger margin-of-error, but will still be statistically confident that it is above the required threshold. Because the benchmark threshold is what we really care about (and not closely estimating p), early stopping allows submitters to process fewer queries in such cases.
+
+Suppose we have a benchmark that requires that submissions achieve a given latency bound 90% of the time. We have system A which achieves this latency bound 99% of the time, and system B which achieves it 91% of the time. In order to have a 99% confidence interval with a margin-of-error of 0.50%, we must perform 23,886 inferences.
+
+This makes sense for system B (whose underlying probability, 91%, is very close to the required benchmark percentile of 90%). However, assuming we see close to 99% of the queries passing the latency requirement for system A, we will be 99% sure that the underlying probability of success for a query on A will be within 99% 土 0.50%. This range is well above the requested latency percentile of 90%. Therefore, by performing fewer queries for such a system, we could widen the margin-of-error slightly, while still being statistically certain of being above the latency benchmark.
+
+=== Combinatorial analysis
+
+Suppose we have a system that meets its latency requirement for each query with probability p. What are the odds that we see at least h underlatency queries and at most t overlatency queries? We can answer this by using the cumulative distribution function for the binomial distribution.
+
+We can think of processing queries as performing n Bernoulli trials, with probability of success for any given trial (i.e., odds of being underlatency) equal to p. The probability of exactly k successes (underlatency queries) is equal to:
+
+f(k; n, p) = P(k successes) = (n choose k) * p^k * (1-p)^(n-k)
+
+For fixed n and p, f(k; n, p) is called the binomial distribution with parameters n and p.
+
+In order to determine how unusual our distribution of latency successes and failures is given the underlying probability of passing the latency bound (p), we compute the probability that we had at most h successes, keeping the total number of queries, n, fixed. This, by definition, involves computing the cumulative density function for our binomial distribution, F(h; n, p):
+
+F(h; n, p) = ∑ f(k; n, p),
+
+with the summation going from k = h to n.
+
+Note that, holding h and n fixed, this probability decreases as p increases. This is because, as p gets larger, the odds that our n queries produced results at least as poor as h successes and t failures decreases. In other words, it is harder to achieve a larger number of failures when the underlying probability of an individual success is higher.
+
+This cumulative distribution function for the binomial distribution, F(k; n, p), can be written in terms of the regularized incomplete beta function. The (unregularized) incomplete beta function is defined as:
+
+B(x; a, b) = ∫t^(a - 1) * (1-t)^(b-1) dt,
+where the integral goes from 0 to x.
+
+We can regularize this to attain:
+
+I(x; a, b) = B(x; a, b) / B(1; a, b).
+
+Note that this is "regularized" in the sense that I(0; a, b) = 0, and I(1; a, b) = 1.
+
+We have an alternate expression for F(k; n, p) in terms of this function:
+
+F(k; n, p) = I(1 - p; n - k, k + 1).
+
+Since the regularized incomplete beta function can be estimated via a continued fraction or by evaluating the Gaussian hypergeometric function, this provides a method for efficiently computing the cumulative density function, F(k; n, p).
+
+=== Determining the Early Stopping Criterion
+
+We can use the computation from the previous section to derive an early stopping condition for performing queries to determine whether a system meets a latency bound. Suppose a benchmark requires that our system meets the latency bound p percent of the time. Given that we have seen t queries which are overlatency, at least how many underlatency queries must we see to be sure—within a certain confidence threshold—that we achieve the desired latency bound?
+
+Fix the following variables:
+
+* p = the percentile for our tail latency (the percentage of the time we would like our system to achieve the set latency bound)
+* c = confidence (1 - (false positive rate for minimally failing system))
+* d = tolerance (amount below target success rate for minimally failing system)
+* t = number of overlatency queries seen thus far.
+
+We need to determine the smallest h (number of underlatency queries) so that the likelihood of seeing at most t overlatency queries less than 1-c. This is given by an expression involving the cumulative distribution function from the previous section:
+
+F(t; h + t, 1 - (p - d)) <= 1-c.
+
+The left hand side is the probability that the minimally failing system (i.e. one with underlatency rate p-d) resulted in t or fewer overlatency queries. Intuitively, we want to know the smallest number of underlatency queries required such that the probability of us seeing this good of a result, assuming a minimally failing system, is very low (at most 1-c). In other words, in order for us to have seen such a good result, we should be quite sure that we meet the latency bound.
+
+We substitute in our previous expression for F in terms of the regularized incomplete beta function to obtain:
+
+I(p - d; h, t + 1) <= 1-c.
+
+In practice we solve this (i.e. find the smallest h satisfying the above expression) via binary search, keeping a cache of previously-computed solutions for other values of t.
+
+=== Early Stopping Criterion
+
+Putting this together, we have the following algorithm for determining early stopping criteria for the server scenario:
+
+1. When the minimum run duration is met, find the total number of queries processed, q, and the total number of overlatency queries, t.
+1. Using the equations above, compute a minimum total query count, n, given t.
+1. If q is greater than or equal to n, the run is successful.
+1. Otherwise, run for an additional n - q queries and proceed from step 2.
+
+How many times we must iterate through steps 2-4 (and thus how many queries we must process) before ending at a step 3 depends on how close the system’s percentile latency is to the target latency.  Systems with lower percentile latency will need to process fewer queries, and those with higher percentile latency will have to process more.  In cases where the system percentile latency is worse than the target, the run will never terminate successfully.
+
+The corresponding early stopping algorithm for single-stream and multi-stream scenarios is:
+
+1. When the minimum run duration is met, find the total number of queries processed, q.
+1. Using the equations above, compute a maximum overlatency count, t, given q.
+1. If t is zero, continue processing queries until t is at least one.
+1. Discard the t - 1 highest latency queries.
+1. Report the maximum latency of the remaining queries.
+
+For our implementation, we use:
+
+* d = 0
+* c = .99.
+
+
+[[appendix-bw]]
+[appendix]
+== Datacenter Bandwidth Requirements
+
+Datacenter systems must satisfy both the ingress and egress bandwidth requirements for each benchmark.
+
+=== Ingress Bandwidth
+Datacenter systems must provide at least the following bandwidths from the network or I/O device to the location where the trace is stored (e.g. DRAM). The minimum bandwidth is a function of the throughput achieved by the SUT and the input data types. The formulas below assume that the inputs are not pre-processed in any way (e.g. padded). If the inputs are pre-processed, and pre-processing affects the input size, submitters must adjust the formulas below accordingly.
+
+|===
+|Area |Model |Dataset | Symbolic input size formula | Numeric input size formula | Minimum network bandwidth (bytes/sec)
+|Vision |Resnet50-v1.5 |ImageNet (224x224) | __C*H*W*dtype_size__ | __3*224*224*dtype_size__ | __throughput*150528*dtype_size__
+|Vision |Retinanet |OpenImages (800x800) | __C*H*W*dtype_size__ | __3*800*800*dtype_size__ | __throughput*1920000*dtype_size__
+|Vision |3D UNET | KiTS 2019 | __avg(C*D*H*W)*dtype_size__footnote:3d_unet_bw[The average image size above is the average image size of the inference cases specified in https://github.com/mlcommons/inference/blob/master/vision/medical_imaging/3d-unet-kits19/meta/inference_cases.json[inference_cases.json].] | __32944795*dtype_size__ | __throughput*32944795*dtype_size__
+|Language |BERT |SQuAD v1.1 (max_seq_len=384) | __num_inputs*max_seq_len*dtype_size__ | __3*384*dtype_size__ | __throughput*1152*dtype_size__
+|Language |Llama3.1-8B |CNN Dailymail (v3.0.0, max_seq_len=2048) | __max_seq_len*dtype_size__ | __2048*dtype_size__ | __throughput*2048*dtype_size__
+|Language |Llama2-70b |OpenOrca (max_seq_len=1024) | __max_seq_len*dtype_size__ | __1024*dtype_size__ | __throughput*1024*dtype_size__
+|Language |Llama3.1-405B | Subset of LongBench, LongDataCollections, Ruler, GovReport | __max_seq_len*dtype_size__ | __20000*dtype_size__ | __throughput*20000*dtype_size__
+|Language |Mixtral-8x7B |OpenOrca (5k samples, max_seq_len=2048), GSM8K (5k samples of the train split, max_seq_len=2048), MBXP (5k samples, max_seq_len=2048) | __max_seq_len*dtype_size__ | __2048*dtype_size__ | __throughput*2048*dtype_size__
+|Language |DeepSeek-r1| mlperf_deepseek_r1| __max_seq_len*dtype_size__ | __3136*dtype_size__ | __throughput*3136*dtype_size__
+|Language |GPT-OSS-120B| AIME25, GPQA Diamond, LiveCodeBench v6| __max_seq_len*dtype_size__ | __15330*dtype_size__ | __throughput*15330*dtype_size__
+|Vision |QWen3-VL-235B-A22B| Shopify Product Catalogue| __(text_size+image_size+chat_completion_template_size+http_header_size)__ | __27051*dtype_size__ | __throughput*27051*dtype_size__
+|Commerce |DLRMv3 | Synthetic Streaming 100B Dataset |__(2 + 6*uih_seq_len + 6*num_candidates)*int64_size__footnote:[Each DLRMv3 request contains 1 UIH sequence (user_id, item_id, ratings, timestamps, weights, category_id) and 2048 candidate features (6 int64 features per candidate).] |__98368__footnote:[DLRMv3: (2 + 6*1 + 6*2048) * 8 = 98368 bytes per sample.] | __throughput*98368__
+|Generative |WAN-2.2-T2V-A14B |VBench prompts | negligible | negligible |  __> 0__
+|Graph |RGAT |IGBH | negligible | negligible | __> 0__
+|Language |E2E-RAG |FRAMES | negligible | negligible | __> 0__
+|===
+=== Egress Bandwidth
+
+Datacenter systems must provide at least the following bandwidths from the output location (e.g. DRAM) to the network or I/O device. The minimum bandwidth is a function of the throughput achieved by the SUT and the output data types. For all models except 3D Unet, WAN-2.2-T2V-A14B, and LLMs (Llama2-70b, Llama3.1-405B, Mixtral-8x7B, DeepSeek-r1, GPT-OSS-120B, Qwen3-VL-235B-A22B), the output sizes are negligible. Therefore, for those models, the egress bandwidth must simply be greater than 0.
+
+|===
+|Area |Model |Dataset | Symbolic output size formula | Numeric output size formula | Minimum network bandwidth (bytes/sec)
+|Vision |Resnet50-v1.5 |ImageNet (224x224) | negligible | negligible | __> 0__
+|Vision |Retinanet |OpenImages (800x800) | negligible | negligible | __> 0__
+|Vision |3D UNET | KiTS 2019 | __avg(C*D*H*W)*dtype_size__footnote:3d_unet_bw[] | __32944795*dtype_size__ | __throughput*32944795*dtype_size__
+|Language |BERT |SQuAD v1.1 (max_seq_len=384) | negligible | negligible | __> 0__
+|Language |Llama3.1-8B |CNN Dailymail (v3.0.0, max_seq_len=2048) | negligible | negligible | __> 0__
+|Language |Llama2-70b |OpenOrca (max_seq_len=1024) | __max_output_len*dtype_size__ | __1024*dtype_size__ | __throughput*1024*dtype_size__
+|Language |Llama3.1-405B |Subset of LongBench, LongDataCollections, Ruler, GovReport | __max_output_len*dtype_size__ | __20000*dtype_size__ | __throughput*20000*dtype_size__
+|Language |Mixtral-8x7B  |OpenOrca (5k samples, max_seq_len=2048), GSM8K (5k samples of the train split, max_seq_len=2048), MBXP (5k samples, max_seq_len=2048) | __max_output_len*dtype_size__ | __2048*dtype_size__ | __throughput*2048*dtype_size__
+|Language |DeepSeek-r1| mlperf_deepseek_r1| __max_seq_len*dtype_size__ | __20000*dtype_size__ | __throughput*20000*dtype_size__
+|Language |GPT-OSS-120B| AIME25, GPQA Diamond, LiveCodeBench v6| __max_output_len*dtype_size__ | __32768*dtype_size__ (accuracy), __10000*dtype_size__ (performance) | __throughput*max_new_tokens*dtype_size__
+|Vision |QWen3-VL-235B-A22B| Shopify Product Catalogue| __json_response_size__footnote:[QWen3-VL-235B-A22B outputs a JSON object containing category (hierarchical path), brand, and is_secondhand fields.] | __~500*dtype_size__ | __throughput*500*dtype_size__
+|Commerce |DLRMv3 |Synthetic Streaming 100B Dataset | negligible | negligible | __> 0__
+|Generative |WAN-2.2-T2V-A14B |VBench prompts | __video_frames*height*width*channels*dtype_size__ | __81*720*1280*3*dtype_size__footnote:[WAN-2.2-T2V-A14B outputs 720p videos with 81 frames.] | __throughput*224,870,400*dtype_size__
+|Graph |RGAT |IGBH | negligible | negligible | __> 0__
+|Language |E2E-RAG |FRAMES | negligible | negligible | __> 0__
+|===
+
+[[appendix-speculative-decoding]]
+[appendix]
+== Speculative Decoding
+
+Speculative decoding is allowed for specific benchmark/scenario combinations as listed below.
+All Implementations must use the reference MTP (Multi-Token Prediction) Head at the same precision as provided, with the reference speculative-decoding algorithm and configuration.
+
+Implementations that artificially manipulate acceptance rates are disallowed, eg: using a different MTP head or continued pre-training of reference MTP head, quantization of the reference MTP head weights, post-training techniques on reference MTP head (like fine-tuning, RLHF etc.)
+
+For quantized edge workloads (e.g. Qwen3.6-27B Edge-Agentic), the reference MTP head MAY be quantized consistently with the base model under the workload's quantization rules, provided decoding remains lossless (greedy-equivalent to the non-speculative result) and the workload's accuracy gate is met. All other head constraints above (reference architecture and weights, no fine-tuning/RLHF/continued pre-training, no acceptance-rate manipulation) continue to apply.
+
+|===
+|Benchmark |Scenario |Speculative Decoding Algorithm |Configuration |MTP Head
+
+|DeepSeek-r1 |Interactive |EAGLE-style decoding with deepseek-ai/deepseek-r1 MTP head |`speculative-num-steps=3`, `speculative-eagle-topk=1.0` |https://huggingface.co/deepseek-ai/DeepSeek-R1
+|GPT-OSS-120B |Interactive |EAGLE3-style decoding with nvidia/gpt-oss-120b-Eagle3-long-context MTP head |`speculative-num-steps=3`, `speculative-eagle-topk=1.0` |https://huggingface.co/nvidia/gpt-oss-120b-Eagle3-long-context
+|Qwen3.6-27B |Edge-Agentic (single-stream) |Chain- or tree-based MTP using the reference Qwen3.6-27B MTP head |Lossless (greedy-equivalent); `num-steps` / tree size submitter-reported, not fixed |https://huggingface.co/Qwen/Qwen3.6-27B
+|===

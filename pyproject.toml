@@ -1,0 +1,36 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "compute-economics"
+version = "0.1.0"
+description = "Auditable conditional compute sourcing economics"
+license = "MIT"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "duckdb",
+    "numpy",
+    "pandas",
+    "plotly>=7.1.0",
+    "pydantic>=2,<3",
+    "streamlit>=1.64.0",
+]
+
+[project.scripts]
+compute-economics = "compute_economics.cli:main"
+
+[dependency-groups]
+dev = ["pytest", "ruff"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/compute_economics"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]

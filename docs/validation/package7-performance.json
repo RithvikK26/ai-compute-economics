@@ -1,0 +1,18 @@
+{
+  "platform": "macOS-26.3.1-arm64-arm-64bit",
+  "machine": "arm64",
+  "python": "3.12.14",
+  "packages": {
+    "duckdb": "1.5.5",
+    "numpy": "2.5.3",
+    "pandas": "3.0.6",
+    "pydantic": "2.13.5",
+    "pytest": "9.1.1",
+    "ruff": "0.16.9"
+  },
+  "warm_three_path_65_policy_seconds": 0.027581749978708103,
+  "full_analysis_including_400_cell_surface_seconds": 4.172983291005949,
+  "peak_process_rss_bytes": 61734912,
+  "measurement_note": "macOS ru_maxrss is bytes. Full analysis includes frontier, stresses and sensitivities, not just grid. Timings are measurements on this host, not hosted-service guarantees.",
+  "input_run_hash": "bfee7bf3a4969c69e1eefc61844a35db6d3590315276d52052a5ab7a76fc9110"
+}

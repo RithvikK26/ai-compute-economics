@@ -1,0 +1,130 @@
+{
+  "gate": "Package 10 PASS \u2014 deployment readiness only",
+  "date": "2026-09-28",
+  "environment": {
+    "python": "3.12.14",
+    "uv": "0.12.19",
+    "platform": "macOS arm64",
+    "clean_source_copy_matches_working_files_before_final_documentation": 143,
+    "installation": "new virtualenv, locked offline install from populated wheel cache; not a cold internet install"
+  },
+  "production_validation": {
+    "installation": "uv sync --locked --no-dev --python 3.12 --offline",
+    "dependency_check": "PASS: 42 installed packages compatible",
+    "app_smoke": "PASS: app.py rendered with network sockets blocked and seven download controls",
+    "development_dependencies": "excluded during production validation, added afterward for full regression suite"
+  },
+  "checks": [
+    {
+      "check": "development_install",
+      "seconds": 0.238191,
+      "exit_code": 0,
+      "output": "Resolved 50 packages in 26ms\nInstalled 5 packages in 30ms\n + iniconfig==2.3.0\n + pluggy==1.6.0\n + pygments==2.21.0\n + pytest==9.1.1\n + ruff==0.16.9"
+    },
+    {
+      "check": "dependencies",
+      "seconds": 0.046559,
+      "exit_code": 0,
+      "output": "Checked 47 packages in 2ms\nAll installed packages are compatible"
+    },
+    {
+      "check": "requirements_export",
+      "seconds": 0.025097,
+      "exit_code": 0,
+      "output": "Export succeeded; byte equality verified by requirements_match."
+    },
+    {
+      "check": "requirements_match",
+      "seconds": 0.008652,
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "check": "lint",
+      "seconds": 0.921254,
+      "exit_code": 0,
+      "output": "All checks passed!"
+    },
+    {
+      "check": "format",
+      "seconds": 0.055113,
+      "exit_code": 0,
+      "output": "52 files already formatted"
+    },
+    {
+      "check": "sources",
+      "seconds": 0.80927,
+      "exit_code": 0,
+      "output": "{\"status\": \"PASS\", \"snapshot\": \"2026-09-27\", \"checked_artifacts\": 41}"
+    },
+    {
+      "check": "catalog",
+      "seconds": 1.018063,
+      "exit_code": 0,
+      "output": "Built offline catalog: artifacts/catalog.duckdb"
+    },
+    {
+      "check": "repository_review",
+      "seconds": 1.211837,
+      "exit_code": 0,
+      "output": "{\"status\": \"PASS\", \"reviewed_files\": 143, \"checks\": [\"local Markdown targets\", \"supplementary license hash\", \"MIT license\", \"local home paths\", \"credential patterns\"]}"
+    },
+    {
+      "check": "full_suite",
+      "seconds": 267.284236,
+      "exit_code": 0,
+      "output": "........................................................................ [ 60%]\n................................................                         [100%]\n120 passed in 265.65s (0:04:25)"
+    },
+    {
+      "check": "reproduction",
+      "seconds": 63.217895,
+      "exit_code": 0,
+      "output": "{\n  \"status\": \"PASS\",\n  \"network\": \"blocked\",\n  \"presets\": {\n    \"stable_demand\": {\n      \"fixture_files\": 10,\n      \"replayed_files\": 10\n    },\n    \"demand_disappointment\": {\n      \"fixture_files\": 10,\n      \"replayed_files\": 10\n    },\n    \"delayed_capacity\": {\n      \"fixture_files\": 10,\n      \"replayed_files\": 10\n    }\n  }\n}"
+    }
+  ],
+  "tests": {
+    "passed": 120,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "pytest_seconds": 265.65,
+    "groups": {
+      "app": 15,
+      "capacity": 22,
+      "cashflows": 20,
+      "catalog": 10,
+      "exports": 17,
+      "scenarios": 9,
+      "sources": 15,
+      "units": 12
+    }
+  },
+  "integrity": {
+    "source_artifacts": 41,
+    "protected_engine_data_scenario_hashes": 57,
+    "requirements_export_matches": true,
+    "analytical_methodology_changed": false,
+    "ui_changed_in_package10": false
+  },
+  "limitations": [
+    "Local macOS validation; first Linux GitHub Actions run awaits publication approval.",
+    "Actual hosted startup, host-managed telemetry and concurrent-user load are untested.",
+    "Historical source snapshot and existing evidence/assumption limitations remain unchanged.",
+    "Offline installation requires preinstalled Python and cached dependencies."
+  ],
+  "environment_notes": [
+    "An interrupted dependency check used the default unwritable cache; completed successfully using the existing writable task cache.",
+    "Streamlit AppTest emits its normal bare-mode missing ScriptRunContext warning; no app exception."
+  ],
+  "external_actions": {
+    "repository_published": false,
+    "application_deployed": false,
+    "visibility_changed": false
+  },
+  "final_repository_review": {
+    "status": "PASS",
+    "reviewed_files": 145,
+    "protected_hashes_rechecked": 57,
+    "tested_application_and_dependency_files_match_working_copy": true
+  }
+}

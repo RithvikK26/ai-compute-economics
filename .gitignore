@@ -1,0 +1,21 @@
+# Local environments and generated runs
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.duckdb
+*.duckdb.wal
+build/
+dist/
+*.egg-info/
+artifacts/
+tests/artifacts/
+# Machine-specific files and secrets
+.DS_Store
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml

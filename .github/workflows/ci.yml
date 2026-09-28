@@ -1,0 +1,38 @@
+name: validate
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.12.19'
+          python-version: '3.12'
+      - name: Verify production installation and entrypoint
+        run: |
+          uv sync --locked --no-dev --python 3.12
+          .venv/bin/python scripts/smoke_app.py
+      - name: Install locked environment
+        run: uv sync --locked --python 3.12
+      - name: Check exported requirements
+        run: |
+          uv export --locked --offline --no-header --no-dev --no-emit-project --format requirements-txt --output-file /tmp/requirements.txt
+          diff requirements.txt /tmp/requirements.txt
+      - name: Lint and formatting
+        run: |
+          uv run --offline ruff check .
+          uv run --offline ruff format --check .
+      - name: Validate frozen sources and rebuild catalog
+        run: |
+          mkdir -p artifacts
+          uv run --offline compute-economics validate-data
+          uv run --offline compute-economics catalog --output artifacts/catalog.duckdb
+      - name: Review documentation and repository hygiene
+        run: uv run --offline python scripts/review_repository.py
+      - name: Unit, integration and Streamlit AppTest
+        run: uv run --offline pytest -q
+      - name: Verify all example exports and JSON replay without network
+        run: uv run --offline python scripts/verify_reproduction.py

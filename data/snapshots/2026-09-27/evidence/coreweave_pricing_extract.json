@@ -1,0 +1,49 @@
+{
+  "url": "https://www.coreweave.com/pricing",
+  "retrieved_at_utc": "2026-09-27T18:28:00.146623+00:00",
+  "method": "Manual narrow factual transcription from web-accessible official page; direct HTTP download returned 403. Two readings reconciled selected rows.",
+  "region": "North America",
+  "currency": "USD",
+  "price_unit": "USD/node-hour",
+  "scope": "On-demand GPU instances; not spot or inference single GPU column",
+  "rows": [
+    {
+      "family": "H100",
+      "gpus": 8,
+      "price": 49.24,
+      "memory_raw": "80 GB",
+      "vcpus": 128,
+      "ram_GB": 2048,
+      "local_TB": 61.44
+    },
+    {
+      "family": "H200",
+      "gpus": 8,
+      "price": 50.44,
+      "memory_raw": "141 GB",
+      "vcpus": 128,
+      "ram_GB": 2048,
+      "local_TB": 61.44
+    },
+    {
+      "family": "B200",
+      "gpus": 8,
+      "price": 68.8,
+      "memory_raw": "180 GB",
+      "vcpus": 128,
+      "ram_GB": 2048,
+      "local_TB": 61.44
+    },
+    {
+      "family": "B300",
+      "gpus": 8,
+      "price": null,
+      "memory_raw": "270 GB",
+      "vcpus": 192,
+      "ram_GB": 4096,
+      "local_TB": 61.44
+    }
+  ],
+  "B300_price_text": "Contact sales",
+  "limitation": "Advertised packaged node resources; inventory, egress and service charges not established; single-GPU inference product is distinct."
+}

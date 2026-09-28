@@ -1,0 +1,32 @@
+{
+  "retrieved_at_utc": "2026-09-27T18:55:06.832298+00:00",
+  "method": "Narrow factual transcription from official web pages, reviewed twice; no engine admission.",
+  "Crusoe": {
+    "url": "https://www.crusoe.ai/cloud/pricing",
+    "locator": "GPU instances / On-demand",
+    "H100": 3.9,
+    "H200": 4.29,
+    "unit": "USD/GPU-hour",
+    "region": "not specified",
+    "minimum_packaging": null,
+    "limitation": "Headline GPU pricing does not establish individually rentable GPUs, all-in packaging or compatible performance."
+  },
+  "AWS": {
+    "url": "https://aws.amazon.com/ec2/capacityblocks/pricing/",
+    "p5e.48xlarge": {
+      "region": "US East (Ohio)",
+      "price": 47.76,
+      "gpus": 8,
+      "family": "H200"
+    },
+    "p6-b300.48xlarge": {
+      "region": "US West (Oregon)",
+      "price": 112.32,
+      "gpus": 8,
+      "family": "B300"
+    },
+    "unit": "USD/instance-hour",
+    "billing_url": "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/capacity-blocks-pricing-billing.html",
+    "limitation": "Scheduled capacity purchase; capacity block fee paid upfront, OS charged separately where applicable; published effective rates do not establish exact purchasable dates or inventory. Not a generic reservation, savings plan or three-year commitment."
+  }
+}

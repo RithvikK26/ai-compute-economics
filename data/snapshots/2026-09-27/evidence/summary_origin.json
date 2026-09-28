@@ -1,0 +1,5 @@
+{
+  "url": "https://raw.githubusercontent.com/mlcommons/inference_results_v6.1/10ecdffda3bb94d71f0203a6ca8e20c17943f27c/summary.csv",
+  "sha256_full_download": "87980a2dfba85139ca806b63634305bcbc4ad6803bf2d520351e022ba905065a",
+  "selection": "CoreWeave; B200/B300 8-GPU; gpt-oss-120b or llama2-70b-99.9; Offline; original columns preserved"
+}

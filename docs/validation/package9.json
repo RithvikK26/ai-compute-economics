@@ -1,0 +1,185 @@
+{
+  "gate": "Package 9 PASS",
+  "setup": {
+    "fresh_environment": "new virtualenv in a clean source copy",
+    "network": "offline",
+    "cache": "populated wheel cache; not a cold internet download",
+    "python_setup": "Preinstalled Python 3.12.14 bin directory added to PATH. Initial offline attempt could not discover interpreter.",
+    "setup_seconds": 0.847997667,
+    "exit_code": 0,
+    "uv_version": "uv 0.12.19 (bea138450 2026-09-24 aarch64-apple-darwin)"
+  },
+  "fresh_environment_checks": [
+    {
+      "check": "sources",
+      "command": ".venv/bin/compute-economics validate-data",
+      "seconds": 2.619365,
+      "exit_code": 0,
+      "result": {
+        "status": "PASS",
+        "snapshot": "2026-09-27",
+        "checked_artifacts": 41
+      }
+    },
+    {
+      "check": "catalog",
+      "command": ".venv/bin/compute-economics catalog --output artifacts/catalog.duckdb",
+      "seconds": 11.7443705,
+      "exit_code": 0
+    },
+    {
+      "check": "example_cli",
+      "command": ".venv/bin/compute-economics run scenarios/stable_demand.json --output artifacts/stable",
+      "seconds": 4.739610584000001,
+      "exit_code": 0
+    },
+    {
+      "check": "example_replay_cli",
+      "command": ".venv/bin/compute-economics run artifacts/stable/scenario.json --output artifacts/replayed",
+      "seconds": 4.5785208330000025,
+      "exit_code": 0
+    },
+    {
+      "check": "all_exports",
+      "command": ".venv/bin/python scripts/verify_reproduction.py",
+      "seconds": 24.101973333999997,
+      "exit_code": 0,
+      "result": {
+        "status": "PASS",
+        "network": "blocked",
+        "presets": {
+          "stable_demand": {
+            "fixture_files": 10,
+            "replayed_files": 10
+          },
+          "demand_disappointment": {
+            "fixture_files": 10,
+            "replayed_files": 10
+          },
+          "delayed_capacity": {
+            "fixture_files": 10,
+            "replayed_files": 10
+          }
+        }
+      }
+    },
+    {
+      "check": "engine_performance",
+      "command": ".venv/bin/python scripts/measure_performance.py engine",
+      "seconds": 4.212181291,
+      "exit_code": 0,
+      "result": {
+        "mode": "engine",
+        "platform": "macOS-26.3.1-arm64-arm-64bit",
+        "python": "3.12.14",
+        "packages": {
+          "duckdb": "1.5.5",
+          "numpy": "2.5.3",
+          "pandas": "3.0.6",
+          "pydantic": "2.13.5",
+          "streamlit": "1.64.0",
+          "plotly": "7.1.0",
+          "pytest": "9.1.1"
+        },
+        "network": "blocked",
+        "samples": 1,
+        "warm_three_path_comparison_seconds": 0.023279999993974343,
+        "full_analysis_seconds": 3.944892624975182,
+        "policies": 65,
+        "surface_cells": 400,
+        "peak_process_rss_bytes": 70074368
+      }
+    },
+    {
+      "check": "app_performance",
+      "command": ".venv/bin/python scripts/measure_performance.py app",
+      "seconds": 9.263302375000002,
+      "exit_code": 0,
+      "result": {
+        "mode": "app",
+        "platform": "macOS-26.3.1-arm64-arm-64bit",
+        "python": "3.12.14",
+        "packages": {
+          "duckdb": "1.5.5",
+          "numpy": "2.5.3",
+          "pandas": "3.0.6",
+          "pydantic": "2.13.5",
+          "streamlit": "1.64.0",
+          "plotly": "7.1.0",
+          "pytest": "9.1.1"
+        },
+        "network": "blocked",
+        "samples": 1,
+        "initial_apptest_seconds": 7.314105291006854,
+        "view_rerun_seconds": {
+          "Decision": 0.06585924999671988,
+          "Economics": 0.22106445897952653,
+          "Risk & Capacity": 0.06949962500948459,
+          "Evidence & Methodology": 0.11692099997890182
+        },
+        "note": "AppTest process, not browser paint time or a hosted concurrent-user load test.",
+        "peak_process_rss_bytes": 235372544
+      }
+    }
+  ],
+  "final_app_measurement": {
+    "mode": "app",
+    "platform": "macOS-26.3.1-arm64-arm-64bit",
+    "python": "3.12.14",
+    "packages": {
+      "duckdb": "1.5.5",
+      "numpy": "2.5.3",
+      "pandas": "3.0.6",
+      "pydantic": "2.13.5",
+      "streamlit": "1.64.0",
+      "plotly": "7.1.0",
+      "pytest": "9.1.1"
+    },
+    "network": "blocked",
+    "samples": 1,
+    "initial_apptest_seconds": 5.559373083000537,
+    "view_rerun_seconds": {
+      "Decision": 0.065464332990814,
+      "Economics": 0.10228904100949876,
+      "Risk & Capacity": 0.06956220799474977,
+      "Evidence & Methodology": 0.08250454199151136
+    },
+    "note": "AppTest process, not browser paint time or a hosted concurrent-user load test.",
+    "peak_process_rss_bytes": 244760576
+  },
+  "tests": {
+    "name": "pytest",
+    "errors": "0",
+    "failures": "0",
+    "skipped": "0",
+    "tests": "120",
+    "time": "120.331",
+    "timestamp": "2026-09-27T21:33:14.646463-04:00"
+  },
+  "manual_visual_review": {
+    "viewports": [
+      "1440x1000",
+      "1366x900"
+    ],
+    "views": [
+      "Decision",
+      "Economics",
+      "Risk & Capacity",
+      "Evidence & Methodology"
+    ],
+    "decision_header_fully_visible": true
+  },
+  "integrity": {
+    "frozen_engine_data_scenario_hashes": 57,
+    "source_artifacts": 41,
+    "methodology_changes": false,
+    "external_publication": false,
+    "deployment": false
+  },
+  "quality": [
+    "Ruff lint and formatting PASS",
+    "Local Markdown links and supplementary license hash PASS",
+    "Credential-pattern/local-home-path scans PASS",
+    "All 60 export comparisons PASS with network sockets blocked"
+  ]
+}
