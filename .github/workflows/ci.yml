@@ -7,6 +7,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
       - uses: astral-sh/setup-uv@v6
         with:
           version: '0.12.19'
@@ -34,5 +36,19 @@ jobs:
         run: uv run --offline python scripts/review_repository.py
       - name: Unit, integration and Streamlit AppTest
         run: uv run --offline pytest -q
-      - name: Verify all example exports and JSON replay without network
-        run: uv run --offline python scripts/verify_reproduction.py
+      - name: Verify decision equivalence against the approved baseline
+        run: uv run --offline python scripts/verify_reduction_equivalence.py
+      - name: Repeat complete export reproduction five times
+        run: |
+          for iteration in 1 2 3 4 5; do
+            echo "Reproduction iteration ${iteration}/5"
+            uv run --offline python scripts/verify_reproduction.py
+          done
+      - name: Retain reproduction mismatch evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reproduction-failure-evidence
+          path: artifacts/reproduction-failures/
+          if-no-files-found: ignore
+          retention-days: 14

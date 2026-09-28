@@ -251,7 +251,14 @@ def test_import_size_rejected_before_computation():
 def test_ui_has_not_changed_frozen_engine_or_source_data():
     # Lock exact pre-UI source bytes, not a comparison against newly generated values.
     frozen = json.loads((ROOT / "tests/fixtures/pre_ui_integrity.json").read_text())
+    approved = json.loads(
+        (ROOT / "tests/fixtures/deterministic_reduction_integrity.json").read_text()
+    )
+    assert approved["file"] == "src/compute_economics/economics.py"
+    assert frozen[approved["file"]] == approved["original_sha256"]
     for name, expected in frozen.items():
+        if name == approved["file"]:
+            expected = approved["approved_sha256"]
         assert hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == expected, name
 
 
