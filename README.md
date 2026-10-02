@@ -1,5 +1,7 @@
 # AI Compute Economics & Capacity Model
 
+**Live app:** [Launch the AI Compute Economics & Capacity Model](https://ai-compute-economics-ln4kzm3c2kn74qbpntdomz.streamlit.app)
+
 **When should a batch-inference workload rent capacity, commit to a baseline, or own a fleet—and what would change that decision?**
 
 This project compares the modeled cost and service feasibility of three sourcing policies over a common demand path. GPU-hour price alone misses throughput compatibility, whole-node billing, idle capacity, delivery delays, cash timing, power and overflow. A lower posted rate can still produce a higher total cost or fail to serve the workload.
