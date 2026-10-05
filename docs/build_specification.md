@@ -1,10 +1,10 @@
 # AI COMPUTE ECONOMICS & CAPACITY MODEL — BUILD SPECIFICATION
 
-Research cutoff: September 27, 2026. Version 1.0. Status: specification for technical review; application not implemented. Prepared for Rithvik Konda’s public portfolio and subsequent Codex implementation.
+Research cutoff: September 27, 2026. Version 1.0. Historical technical requirements; current operation and validation are documented separately. Development-only instructions have been removed from this public copy.
 
-This document defines the product, equations, data contracts, source requirements, interface, tests, and ordered build. It uses public information and original analytical design. Company names identify research sources and intended audiences, not clients, partners, or endorsements. No employer-confidential information is required.
+This document defines the product, equations, data contracts, source requirements, interface, tests, and validation requirements. It uses public information and original analytical design. Company names identify research sources, not clients, partners, or endorsements. No employer-confidential information is required.
 
-Evidence convention: [S01]–[S32] refer to exact URLs and acquisition instructions in Section 3. Numerical design defaults and test fixtures are explicitly assumptions, not market observations. Web pages were inspected or located on the research date; undated live pages are observations retrieved on that date, not verified historical time series. Freeze the actual source artifacts during implementation.
+Evidence convention: [S01]–[S32] refer to exact URLs and acquisition instructions in Section 3. Numerical design defaults and test fixtures are explicitly assumptions, not market observations. Web pages were inspected or located on the research date; undated live pages are observations retrieved on that date, not verified historical time series. The implemented snapshot is pinned by its artifact manifest.
 
 ## 1. Executive Summary
 
@@ -18,7 +18,7 @@ The flagship case is gpt-oss-120b under MLPerf Inference v6.1 Offline, using the
 
 Deliver a Python package, curated source tables, meaningful SQL transformations, a Streamlit application, a reproducible example decision memo, and tests. Use DuckDB as an embedded analytical layer over versioned CSV/JSON files. No external database, GPU, API key, or paid subscription is needed to run the finished demonstration.
 
-The differentiator is **decision integrity**: common workload denominators; explicit uncertainty; whole-node capacity; contract obligations; deployment delay; source provenance; and the ability to say “insufficient evidence.” The project’s hiring signal is analytical ownership and sound judgment. It should not claim production infrastructure expertise, measured customer savings, or superior recruiting outcomes.
+The design emphasizes **decision integrity**: common workload denominators; explicit uncertainty; whole-node capacity; contract obligations; deployment delay; source provenance; and the ability to say “insufficient evidence.” It should not claim production infrastructure expertise, measured customer savings, or employer endorsement.
 
 ## 2. Market & Technical Scope
 
@@ -598,80 +598,17 @@ ai-compute-economics/
     scenario.json
 ```
 
-README starts with the decision question, screenshot after implementation, one concrete reproducible finding, limitation banner, quick start, data date and links to methodology. Do not open with a tool-logo wall. `decisions.md` records the storage choice, workload boundary, reasons for excluded features and any approved model changes. `validation.md` describes actual checks run and unresolved limitations. `examples` contains engine-generated, reproducible outputs only after implementation. Build caches, secrets, local user scenarios and generated database files remain gitignored.
+README starts with the decision question, representative screenshot, one concrete reproducible finding, limitation banner, quick start, data date and links to methodology. Do not open with a tool-logo wall. `decisions.md` records the storage choice, workload boundary, reasons for excluded features and documented model changes. `validation.md` describes actual checks run and unresolved limitations. `examples` contains engine-generated, reproducible outputs. Build caches, secrets, local user scenarios and generated database files remain gitignored.
 
-Use `pyproject.toml` as dependency source of truth, `uv.lock` for deterministic development, and a generated pinned `requirements.txt` for the host. CI must detect inconsistent exports. Proposed commands after implementation: `uv sync --locked`, `uv run compute-economics validate-data`, `uv run compute-economics run scenarios/stable_demand.json --output examples`, `uv run pytest`, and `uv run streamlit run app.py`. Implement the CLI contract; these commands are not claimed to work yet.
+Use `pyproject.toml` as dependency source of truth, `uv.lock` for deterministic development, and a generated pinned `requirements.txt` for the host. CI must detect inconsistent exports. CLI contract: `uv sync --locked`, `uv run compute-economics validate-data`, `uv run compute-economics run scenarios/stable_demand.json --output examples`, `uv run pytest`, and `uv run streamlit run app.py`. Current commands are documented in the README.
 
-## 11. Ordered Implementation Plan
+## 11. Engineering verification
 
-Each package is a gate. Codex should finish the relevant validation before adding the next layer, avoiding simultaneous UI and model redesign.
+Contracts, source provenance, catalog joins, demand and capacity conservation, cash-flow reconciliation, feasibility, practical ties, fixed-fleet risk and discontinuous frontier brackets are tested independently. Exported scenarios must reproduce their outputs. Application tests cover four views, invalid inputs, missing evidence, downloads and session isolation. The [validation record](validation.md) documents executed checks and their limits.
 
-| Package | Objective / dependencies | Components | Acceptance criteria and gate |
-|---|---|---|---|
-| 1. Contracts and scaffolding | Establish package, model version and schemas; no dependencies | pyproject, schemas, units, docs/spec, CI skeleton | Clean locked install; strict schema rejects impossible units/nonfinite values; no Streamlit import in engine |
-| 2. Source snapshot | Freeze evidence and identify unavailable inputs; depends on 1 | data tables, manifest, source_collection, ingestion | All selected prices reconcile; MLPerf rows and metadata frozen by commit/hash; missing prices remain null; assumptions labeled; licenses noted |
-| 3. Analytical catalog | Demonstrate useful SQL joins without changing data meaning; depends on 2 | catalog, three SQL queries, tests/sources | Query tests catch duplicate joins, stale rows, wrong region, wrong billing unit and missing evidence; database rebuilds offline |
-| 4. Demand and capacity | Implement the common workload and whole-node dispatch; depends on 1–3 | workload, capacity, scenario fixtures | Numeric capacity/billing oracles pass; calendar and conservation hold; demand invariant across hardware; shortages visible |
-| 5. Economics | Build auditable cash-flow ledgers; depends on 4 | economics, cashflow tests | Energy, idle power, prepayment, PV and zero-rate oracles pass; cost categories sum to total; no double counting |
-| 6. Comparison and risk | Evaluate fixed policies and named stresses; depends on 5 | scenarios, comparison tests | Infeasible policies never win; cap-bound warning; tie/regret logic; stress does not resize fleet; crossover surface respects discontinuities |
-| 7. Reports and CLI | Make model useful without UI; depends on 6 | reporting, cli, example exports | One command generates complete memo/ledger/JSON; exported JSON reproduces outputs and hash; memo names missing evidence and sensitivity reversals |
-| 8. Interactive product | Add four views on the stable engine; depends on 7 | app.py, ui, charts, AppTest | Presets run; units/warnings visible; invalid edits handled; provenance reachable; exports function; two sessions isolated |
-| 9. Review and documentation | Challenge the model and finish reproducibility; depends on 8 | docs, README, notices, CI | All critical tests pass; fresh-environment setup and offline run verified; performance targets measured; no invented impact or benchmark claims |
-| 10. Deployment readiness | Prepare hosting instructions and environment; depends on 9 | requirements export, deployment guide | Local run and host configuration reviewed; source freshness visible. Actual deployment waits for the later build task’s authorization |
+## 12. Open Questions / Risks
 
-Hard stop conditions: unexplained benchmark schema drift; contradictory price units; missing source permissions; an economic fixture failing; or a requested feature that requires redesigning the workload or financing model. Codex should describe the exact issue and propose a narrow fix. Routine code organization, layout, package patch versions and implementation mechanics do not require user clarification.
-
-## 12. Hiring-Manager Audit
-
-This is an analytical calibration, not an asserted internal hiring rubric. Public OpenAI descriptions support the relevance of compute roadmaps, financial evaluation, capacity planning, unit economics, scenario work and cross-functional sourcing [S24–S26]. Anthropic’s public listings establish related compute-finance and infrastructure role families [S27]. The remaining reviewer perspectives below are reasoned judgments about the work product.
-
-| Reviewer | Strong evidence from finished MVP | Likely challenge |
-|---|---|---|
-| OpenAI Strategic Finance | Capital allocation, monthly cash requirements, sourcing alternatives and clearly communicated assumption sensitivity | “Do your cash flows double-count capital costs? What real quote would change the answer?” |
-| OpenAI Compute Strategy | Workload-based capacity, whole-node constraints, availability limits and rollout delay | “Can this hardware actually meet the workload? Why does a benchmark apply?” |
-| Anthropic Finance & Strategy / Compute | Unified operating/contract/capital cost view, scenario risk and traceable cost allocation | “What happens if demand misses after signing? What obligations remain?” |
-| AI-infrastructure strategy leader | Distinction between advertised inventory, contracted capacity and delivered capacity; technically honest limits | “Where are power, delivery, topology and operating overhead in this model?” |
-| NVIDIA business/infrastructure strategy | Performance-per-dollar measured for a specific system/workload, with software and precision identified | “Are you comparing complete systems, or cherry-picking chip metrics?” |
-| Palantir Deployment Strategy | Translating an ambiguous business question into explicit data, workflows, constraints and an actionable decision | “Can another user apply this to their problem? What did you learn from friction?” |
-| Software engineer | Pure functions, typed contracts, meaningful SQL, deterministic tests, reproducible installs, sensible architecture | “Can I change an input safely? Are there hidden globals or UI-only formulas?” |
-| Recruiter comparing strong CS students | Working product plus unusually sound economic interpretation and evidence discipline | “Did you understand and own it, or generate a polished wrapper around assumptions?” |
-
-Overlapping capability: formulate a decision, obtain messy public evidence, normalize it correctly, implement transparent calculations, test failures, communicate uncertainty and make a useful artifact. Depth matters more than architectural complexity.
-
-What would look superficial: a GPU-spec dashboard; endless filters; undocumented “industry averages”; a pretty rent-vs-own chart driven by guessed acquisition prices; an LLM-generated recommendation; generic SQL included solely for keywords; or claiming operational impact without users. A model can use assumed acquisition costs credibly if it clearly answers the threshold question and identifies the quote needed to resolve the decision.
-
-Interview demonstration: spend roughly five minutes loading the base case, tracing one result to source and formula, shocking demand while keeping the commitment fixed, showing a capacity-constrained case, and changing a critical assumption until the result reverses. Explain one bug caught by an independent test. Only discuss an actual bug once one has been found and fixed.
-
-Rithvik’s strongest angle is the combination of finance judgment and hands-on analytical engineering. The project need not mimic a compiler, distributed training framework or ML research paper. Its credibility depends on being able to explain the code and economic boundaries unaided. Do not present the finished tool as a production capacity planner used by a frontier lab.
-
-## 13. Interview Defense
-
-The creator should be able to answer all 20 questions with a short explanation, the relevant equation, and a concrete example from the finished app.
-
-1. **What exact decision does this tool change?** Explain fixed baseline capacity versus flexible overflow, the horizon, constraints and policy family. Name a result that would change an actual procurement discussion.
-2. **Why is GPU-hour price an inadequate ranking metric?** Explain node packaging and differences in useful work, memory, software, utilization and precision. Use token-normalized economics only within a compatible workload.
-3. **Why use gpt-oss-120b as the primary workload and retain Llama 2 70B?** Explain the primary published benchmark anchors and the secondary historical comparability reference; distinguish both from claims about the best production model.
-4. **What does MLPerf throughput actually measure?** Explain the submitted complete system, workload, quality, scenario and software. Describe why reproducing economic arithmetic is not reproducing the hardware benchmark.
-5. **Can Offline performance support a real-time chat product?** Explain why latency/arrival constraints require different data and why the MVP excludes that conclusion.
-6. **How did you choose the production transfer factor?** Admit it is an assumption; show the sensitivity and identify the measurement that would replace it. Do not call 70% an industry standard.
-7. **How do memory and interconnect enter?** Explain the compatibility gate and execution evidence, and why aggregate memory is not automatically usable by one model replica.
-8. **Why not include every GPU, TPU and Trainium?** Explain evidence admission, software portability and the cost of unsupported comparisons; identify what would qualify one new system.
-9. **Why might a commitment lose even when its hourly rate is lower?** Demonstrate unused paid capacity, demand risk, setup/prepayment and horizon obligations.
-10. **Does a discount reserve capacity?** Distinguish commercial discount, capacity reservation and scheduled capacity product; explain what remains unknown about actual inventory.
-11. **How is availability different from utilization?** Availability reduces productive service capacity; utilization is realized execution over paid or available hours. Explain the two denominators and no double counting.
-12. **Why do owned GPUs cost money while idle?** Walk through fixed costs and idle power. Explain why GPU TDP is not the facility electricity bill.
-13. **Where do depreciation, financing and cost of capital enter?** Defend cash-based unlevered NPV and distinguish book expense, interest and discounting. Explain why they cannot all be added as costs.
-14. **How do you estimate useful life and residual value?** Explain independent assumptions, obsolescence stress, and why a public six-year accounting policy is not your resale model.
-15. **How do you prevent a short horizon making ownership look artificially cheap or expensive?** Discuss terminal proceeds, the common horizon, full contract term and rejection of unsupported replacement/tail liabilities.
-16. **What happens during commissioning delay or unavailable overflow?** Show rental bridging, capacity bounds and unserved demand. Explain why a low-cost infeasible plan cannot win.
-17. **Is your result globally optimal?** No: enumerate the fixed policy family, finite bounds, baseline-first dispatch and homogeneous fleet restrictions. Show the bound warning and omitted economic dispatch case.
-18. **How do you know the numbers are correct?** Demonstrate one independent oracle, one dimensional check, one bad-source fixture and complete ledger reconciliation.
-19. **Why DuckDB rather than PostgreSQL or only pandas?** Explain embedded read-oriented SQL, canonical files, meaningful relational checks and the absence of shared writes. Name the requirement that would justify switching.
-20. **What are the biggest remaining risks and next validation steps?** Prioritize a complete quote, measured workload throughput/power and real demand profile; separate conditional analysis from a procurement recommendation.
-
-## 14. Open Questions / Risks
-
-### 14.1 Required evidence checks before model admission
+### 12.1 Required evidence checks before model admission
 
 | Issue | Current resolution | Implementation action |
 |---|---|---|
@@ -679,13 +616,13 @@ The creator should be able to answer all 20 questions with a short explanation, 
 | Benchmark-to-rented-node mapping | Matching family/provider is insufficient | Inspect source system/log metadata; record hardware/runtime differences; retain conditional transfer label |
 | B300 memory discrepancy and quote-only price | Unresolved provider/configuration-specific facts | Preserve raw reported memory; leave price null; do not rank financially without a user assumption or complete verified offer |
 | Current physical inventory | Public catalog is insufficient | User-supplied capacity limits and availability acknowledgement; no unconditional sourcing recommendation |
-| Source snapshots and licenses | URLs and selected values established, repository artifacts not yet frozen | Package 2 pins commits, stores narrow evidence and checks reuse obligations before admission |
+| Source snapshots and licenses | Evidence frozen in the 2026-09-27 snapshot | The manifest pins commits and narrow evidence; reuse obligations are documented before admission |
 | Within-block burstiness | Two-block approximation | Disclose loss of temporal detail; use batch-only boundary; production SLO analysis deferred |
 | Real organizational overhead | Public staffing/support boundary incomplete | Itemize assumptions and exclusions; avoid calling result company gross margin |
 
-These are not blockers to a clearly labeled analytical prototype. They are blockers to promoting the result as an observed procurement recommendation. Do not stop the build simply because proprietary transaction prices are unavailable; the explicit assumption/threshold mode is part of the product.
+These uncertainties limit procurement conclusions. Explicit assumptions and decision thresholds allow conditional analysis while the missing commercial evidence remains visible.
 
-### 14.2 Known model risks
+### 12.2 Known model risks
 
 The largest economic uncertainties are workload-transfer performance, acquisition cost, long-term demand, actual contract terms, delivery/capacity and residual value. Electricity may be important but should not distract from larger drivers; let the sensitivity results establish the ordering. The flagship benchmark uses aggressive optimized software/precision and must not be extrapolated to arbitrary models or enterprise deployment stacks.
 
@@ -694,25 +631,3 @@ Published lists can lag negotiations; live page content can change after the res
 MVP ownership is an incremental fleet in existing colocation, not a hyperscale-campus investment. The simplified scheduler assumes divisible independent batch work and linear replication of the validated node, subject to the transfer factor. It does not reproduce fabric contention, storage bottlenecks, heterogeneous traffic, regional failover or dynamic autoscaling.
 
 The project is valuable even if the answer is conditional. A reviewer should be able to see exactly which unknown is worth measuring next. Avoid an unsupported claim that this is the definitive model of frontier-company compute economics; it is a tightly specified, extensible decision model with honest boundaries.
-
-## 15. CODEX HANDOFF
-
-**Objective:** Implement the approved MVP defined in this document, an auditable compute-capacity sourcing workbench. Do not redesign the economics to simplify coding. If a formula appears inconsistent, raise the specific inconsistency and propose a correction before changing it. The current task produced a specification only; execute this brief in the subsequent implementation task.
-
-**Core decision:** For one fixed batch-inference workload and common token-demand schedule over 36 actual calendar months, compare all-on-demand, K committed nodes plus rental overflow, and K owned nodes in colocation plus rental overflow. Enumerate K=1…32 (bounded user expansion to 128); no mixed-generation or simultaneous own+commit baseline. Hold K fixed across downside/base/upside stresses. Exclude infeasible policies from the cost winner.
-
-**Evidence:** Begin with S01 B200 $68.80 per eight-GPU node-hour and S11 CoreWeave v6.1 B200 gpt-oss-120b Offline 91,487.4 tokens/s per node. Record exact system ID, result path, release/commit, runtime and quality metadata. Include B300’s gpt-oss-120b Offline 112,840 tokens/s reference; retain Llama 2 70B 99.9 Offline B200 102,703 and B300 115,530 tokens/s for secondary validation, but leave its CoreWeave on-demand price null. H100/H200 are cost catalog rows until compatible throughput is admitted. No GPU-performance ratio inferred from FLOPS or memory. Revalidate and freeze all public values, preserving the research snapshot rather than silently changing it.
-
-**Assumptions:** Implement the visibly synthetic defaults in 5.11 and immutable demand scale in 5.4. All user overrides retain original provenance. Unknowns are null, not zero. Workload/system transfers are explicitly conditional. Missing essential price/cost/performance data blocks the affected policy. Currency is USD only.
-
-**Engine:** Follow 5.3 calculation order; use 5.4–5.5 capacity, overflow and billing equations; 5.6 commitment payment obligations; 5.7 idle/load power and ownership; 5.8 monthly discounted cash flows; 5.9 crossover logic; 5.10 ranking/ties and fixed-policy risk. Include terminal proceeds once. No depreciation, debt interest, taxes, contribution-margin claim or hidden shortage penalty in MVP NPV. Unit costs with zero delivered work are null. Every aggregate must reconcile to the ledger.
-
-**Architecture:** Python 3.12 target, pandas, NumPy, DuckDB, Pydantic, Streamlit, Plotly, pytest and Ruff. Canonical CSV/JSON snapshots; rebuildable analytical DuckDB; pure Python economic functions; session-local scenarios; versioned JSON/CSV/Markdown exports. Pin a tested environment in pyproject/uv.lock and generate matching host requirements. No external service, paid data, GPU execution, live scrape, LLM, microservice, PostgreSQL, Kubernetes or vector database.
-
-**UX:** Four views: Decision, Economics, Risk and capacity, Evidence and methodology. Make the decision frontier / breakeven surface the hero output, alongside a conditional lowest-cost result, upfront cash, obligations, service gaps, cost breakdown and tested reversals. Make source/assumption details one interaction away. The default result is an illustrative scenario, never a market quote or production capacity guarantee.
-
-**Build sequence:** Execute packages 1–10 in Section 11. Model and independent numerical tests precede UI. Implement the repository structure in Section 10 and the CLI commands specified there. Create examples only from passing engine outputs; do not prewrite a claimed winner or savings figure.
-
-**Acceptance:** All Section 8 critical source, economic and capacity tests pass; one-command offline example reproduction works; exports round-trip; separate sessions remain isolated; source ages and unavailable values display correctly; hardware changes do not alter demand; fixed-policy stress does not resize the fleet; missing B300 price never becomes zero; unserved-demand cases never win; performance targets are measured and reported honestly.
-
-**Final build delivery:** Provide the working repository, complete methodology/assumption/source/validation/deployment documents, one reproducible decision memo, installation/run/test instructions, and a concise account of what was built, tested and remains uncertain. Deployment is a separate action governed by the later user request. Use only public information and original analysis; do not claim users, adoption, commercial impact, independent GPU benchmarking or employer endorsement.

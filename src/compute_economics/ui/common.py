@@ -2,6 +2,7 @@ import pandas as pd
 import streamlit as st
 
 from compute_economics.ui.charts import policy_label
+from compute_economics.ui.presentation import configuration_label
 
 
 def dollars(value):
@@ -24,11 +25,13 @@ def policy_table(bundle):
         rows.append(
             {
                 "Policy": policy_label(p["policy_id"]),
-                "Configuration": p["configuration_id"],
+                "Configuration": configuration_label(p["configuration_id"]),
                 "Status": p["status"],
                 "Nodes": p["nodes"],
                 "PV cost (USD)": p["pv_cost_usd"],
-                "Savings vs full-service OD (USD)": comparison["savings_vs_od_usd"][p["policy_id"]],
+                "Savings vs full-service on-demand (USD)": comparison["savings_vs_od_usd"][
+                    p["policy_id"]
+                ],
                 "Upfront (USD)": p["upfront_usd"],
                 "Obligation (USD)": p["obligation_usd"],
                 "Unused-paid share (%)": (
@@ -46,7 +49,11 @@ def policy_table(bundle):
     )
     st.dataframe(
         frame.style.format(
-            {**{name: "${:,.0f}" for name in money_columns}, "Unmet tokens": "{:,.0f}"},
+            {
+                **{name: "${:,.0f}" for name in money_columns},
+                "Unmet tokens": "{:,.0f}",
+                "Unused-paid share (%)": "{:.1f}%",
+            },
             na_rep="Unavailable",
         ),
         hide_index=True,

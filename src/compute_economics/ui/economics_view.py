@@ -3,10 +3,10 @@ import streamlit as st
 from compute_economics.ui.charts import cash_chart, cost_chart, policy_label
 from compute_economics.ui.common import dollars, policy_picker, show_chart
 from compute_economics.ui.controls import economics_form
+from compute_economics.ui.presentation import display_table
 
 
 def render(bundle):
-    st.caption("02 / ECONOMICS · CASH TIMING AND COST BOUNDARY")
     st.header("What must be funded, and when")
     selected = policy_picker(bundle, "economics_policy")
     result = next(p for p in bundle.analysis["policies"] if p["policy_id"] == selected)
@@ -35,9 +35,9 @@ def render(bundle):
             "cost_components",
         )
         with st.expander("Monthly and annual ledgers"):
-            st.dataframe(selected_frame, hide_index=True, width="stretch")
+            display_table(selected_frame)
             annual = bundle.table("annual_costs.csv")
-            st.dataframe(annual[annual.policy_id == selected], hide_index=True, width="stretch")
+            display_table(annual[annual.policy_id == selected])
             st.caption(
                 "Annual operating cash is separate from total cash. Year one includes time-zero investment. Complete ledgers for every policy are available under Export current run."
             )

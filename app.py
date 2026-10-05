@@ -1,10 +1,11 @@
-"""Package 8 entry point: session-local controls and presentation only."""
+"""Streamlit entry point: session-local controls and presentation only."""
 
 import streamlit as st
 
 from compute_economics.reporting import safe_text
 from compute_economics.ui import decision, economics_view, evidence, risk
 from compute_economics.ui.controls import publish, sidebar
+from compute_economics.ui.presentation import configuration_label, label
 from compute_economics.ui.service import compute_preset
 
 st.set_page_config(
@@ -18,6 +19,7 @@ st.markdown(
 [data-testid="stMetric"] {background:white;border:1px solid #DFE6EA;border-radius:9px;padding:16px 20px;}
 [data-testid="stMetricValue"] {font-size:clamp(1rem, 1.8vw, 1.65rem);}
 [data-testid="stMetricLabel"] p {white-space:normal;}
+.st-key-stability_card [data-testid="stMetricValue"] :is(div, p) {white-space:normal;overflow:visible;text-overflow:clip;}
 @media (max-width:1100px) { [data-testid="stMetric"] {padding:12px 8px;} }
 [data-testid="stSidebar"] {border-right:1px solid #DFE6EA;}
 [data-testid="stCaptionContainer"] {color:#516778;}
@@ -30,12 +32,12 @@ if "completed" not in st.session_state:
 bundle = st.session_state["completed"]
 sidebar(bundle)
 st.caption("COMPUTE ECONOMICS / CAPACITY SOURCING")
-st.title("A decision, with its boundaries.")
+st.title("Rent, commit, or own AI compute?")
 st.caption(
-    f"{bundle.run.workload.model} · MLPerf v6.1 Offline · {bundle.run.configuration_id} · {bundle.run.horizon_months} calendar months · USD"
+    f"{bundle.run.workload.model} · MLPerf v6.1 Offline · {configuration_label(bundle.run.configuration_id)} · {bundle.run.horizon_months} calendar months · USD"
 )
 st.caption(
-    "Illustrative scenario using public reference data and analyst assumptions. Benchmark performance is not production throughput."
+    "Example results use public reference data and explicit model assumptions. Benchmark performance is not production throughput."
 )
 view = st.radio(
     "View",
@@ -50,7 +52,7 @@ if st.session_state.get("input_error"):
         + st.session_state["input_error"]
     )
 st.caption(
-    f"Completed scenario: {safe_text(bundle.run.scenario_id)} · run {bundle.envelope['run_hash'][:12]} · controls are drafts until submitted"
+    f"Scenario: {safe_text(label(bundle.run.scenario_id))} · results reflect the last submitted inputs"
 )
 {
     "Decision": decision.render,
@@ -85,7 +87,7 @@ with st.expander("Export current run"):
             on_click="ignore",
         )
     st.download_button(
-        "All results and audit files · ZIP",
+        "Complete audit · ZIP",
         bundle.zip_bytes(),
         file_name="compute-economics-run.zip",
         mime="application/zip",

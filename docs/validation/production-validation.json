@@ -1,5 +1,5 @@
 {
-  "gate": "Package 10 PASS \u2014 deployment readiness only",
+  "gate": "Historical production validation PASS",
   "date": "2026-09-28",
   "environment": {
     "python": "3.12.14",
@@ -104,10 +104,10 @@
     "protected_engine_data_scenario_hashes": 57,
     "requirements_export_matches": true,
     "analytical_methodology_changed": false,
-    "ui_changed_in_package10": false
+    "ui_changed_during_validation": false
   },
   "limitations": [
-    "Local macOS validation; first Linux GitHub Actions run awaits publication approval.",
+    "Local macOS validation; Linux CI had not run at the time of this historical record.",
     "Actual hosted startup, host-managed telemetry and concurrent-user load are untested.",
     "Historical source snapshot and existing evidence/assumption limitations remain unchanged.",
     "Offline installation requires preinstalled Python and cached dependencies."

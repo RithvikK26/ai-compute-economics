@@ -5,7 +5,8 @@ import pandas as pd
 import streamlit as st
 
 from compute_economics.catalog import build_catalog, query_catalog
-from compute_economics.reporting import EXCLUSIONS, MISSING_EVIDENCE
+from compute_economics.reporting import EXCLUSIONS
+from compute_economics.ui.presentation import MISSING_EVIDENCE, display_table, label, number_text
 from compute_economics.ui.service import DATA
 from compute_economics.validation import read_table, validate_run
 
@@ -28,10 +29,9 @@ def public_catalog():
 
 
 def render(bundle):
-    st.caption("04 / EVIDENCE & METHODOLOGY · TRACE EVERY INPUT")
     st.header("What is known. What is assumed.")
     st.write(
-        "Observed means published by the source, not independently measured in production. Derived means calculated from named parents. Analyst and user assumptions remain distinct. Unavailable is null, never zero."
+        "Observed means published by the source, not independently measured in production. Derived means calculated from named parents. Model and user assumptions remain distinct. Unavailable is null, never zero."
     )
     report = validate_run(bundle.run)
     cols = st.columns(3)
@@ -46,10 +46,11 @@ def render(bundle):
     for e in bundle.run.evidence + bundle.run.override_history:
         records.append(
             {
-                "Input": e.input_id,
-                "Value": "Unavailable" if e.value is None else str(e.value),
+                "Input": label(e.input_id),
+                "Input ID": e.input_id,
+                "Value": "Unavailable" if e.value is None else number_text(e.value),
                 "Unit": e.unit,
-                "Evidence class": e.evidence_class,
+                "Evidence class": label(e.evidence_class),
                 "Source": e.source_url,
                 "Locator": e.source_locator,
                 "Observed UTC": str(e.observed_at_utc or "Not applicable"),
@@ -65,10 +66,11 @@ def render(bundle):
         ["observed", "derived", "analyst_assumption", "user_assumption", "unavailable"],
         default=["observed", "derived", "analyst_assumption", "user_assumption", "unavailable"],
         key="evidence_classes",
+        format_func=label,
     )
     frame = pd.DataFrame(records)
     st.dataframe(
-        frame[frame["Evidence class"].isin(kind)],
+        frame[frame["Evidence class"].isin([label(k) for k in kind])],
         hide_index=True,
         width="stretch",
         column_config={"Source": st.column_config.LinkColumn("Source")},
@@ -78,24 +80,15 @@ def render(bundle):
         st.write("• " + item)
     catalog = public_catalog()
     with st.expander("Source catalog and dates"):
-        st.dataframe(
-            pd.DataFrame(catalog["sources"]),
-            hide_index=True,
-            column_config={"url": st.column_config.LinkColumn("Source URL")},
-            width="stretch",
-        )
-        st.dataframe(
-            pd.DataFrame(catalog["offers"]).replace("", "Unavailable / not applicable"),
-            hide_index=True,
-            width="stretch",
-        )
+        display_table(pd.DataFrame(catalog["sources"]))
+        display_table(pd.DataFrame(catalog["offers"]).replace("", "Unavailable / not applicable"))
     with st.expander("Benchmark compatibility and reference anchors"):
         st.write(
             "gpt-oss-120b is primary. Llama 2 70B 99.9 Offline is secondary historical validation. Exact model, dataset, quality, runtime, precision and topology must match the admitted reference; production transfer remains assumed."
         )
-        st.dataframe(pd.DataFrame(catalog["benchmarks"]), hide_index=True, width="stretch")
-        st.dataframe(pd.DataFrame(catalog["compatibility"]), hide_index=True, width="stretch")
-        st.dataframe(pd.DataFrame(catalog["coverage"]), hide_index=True, width="stretch")
+        display_table(pd.DataFrame(catalog["benchmarks"]))
+        display_table(pd.DataFrame(catalog["compatibility"]))
+        display_table(pd.DataFrame(catalog["coverage"]))
     with st.expander("Methodology, units and exclusions", expanded=True):
         st.write(EXCLUSIONS)
         st.write(

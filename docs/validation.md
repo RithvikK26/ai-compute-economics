@@ -1,24 +1,14 @@
 # Validation and reproducibility record
 
-Tests validate arithmetic, contracts, published-source reconciliation and application behavior. They do not independently benchmark hardware, validate forecast accuracy, or establish customer savings. The frozen analytical snapshot is **2026-09-27**. No analytical methodology changed during the Package 9 review.
+Tests validate arithmetic, contracts, published-source reconciliation and application behavior. They do not independently benchmark hardware, validate forecast accuracy, or establish customer savings. The frozen analytical snapshot is **2026-09-27**. Historical local records below precede the deterministic-reduction correction and public deployment.
 
-## Gates already completed
+## Coverage
 
-| Package | Gate evidence |
-|---|---|
-| 1–4 | Strict contracts, source hashes, DuckDB joins, independent whole-node capacity/billing fixtures, calendar and conservation checks |
-| 5 | Independent cash/energy/PV fixtures; idle power, prepayment, terminal flows and category reconciliation |
-| 6 | Feasibility, practical ties, fixed-fleet regret, discontinuous frontier brackets and 400-cell surface |
-| 7 | 105 tests; complete CLI/memo/ledger exports and exact JSON reproduction |
-| 8 | 120 tests: 105 engine/source/export tests plus 15 UI tests; four views, all presets, invalid edits, missing B300 price, downloads/import, isolation and label escaping |
+The original suite contained 120 tests: 105 engine/source/export checks and 15 application tests. Four focused deterministic-reduction checks brought the published suite to 124. Coverage includes independent arithmetic oracles, calendar/capacity conservation, source hashes, feasibility, practical ties, fixed-fleet regret, threshold brackets, 400-cell surfaces, all four views, presets, invalid inputs, missing B300 prices, import/export and separate sessions.
 
-Historical [Package 7 test results](validation/package7-tests.xml), [performance](validation/package7-performance.json), and [Package 8 test results](validation/package8-tests.xml) retain the original measurements; machine hostnames were removed from public review copies. They are historical gates, not claims about current hosted service performance.
+Historical [engine tests](validation/engine-tests.xml), [engine performance](validation/engine-performance.json), and [UI tests](validation/ui-tests.xml) retain their original measurements. Hostnames were removed from public copies. They are not current hosted-service performance claims.
 
-## Package 9 review scope
-
-The review updates documentation, original-code MIT licensing, upstream attribution, CI, offline verification, repository hygiene and presentation. The 57 pre-UI engine/data/scenario hashes remain unchanged. No source prices, benchmark scores, assumptions, formulas, feasibility rules or policy selection logic were modified.
-
-The full test matrix contains 120 cases: UI 15, capacity 22, cash flows 20, catalog 10, exports 17, scenarios 9, sources 15, and units 12. The four-view AppTest now explicitly blocks outbound socket connections. `scripts/verify_reproduction.py` blocks network and compares all 10 files for each of three presets against checked-in fixtures and a fresh JSON replay: 60 file comparisons. Only `created_at_utc` is excluded from envelope equality, as defined by the existing hash contract.
+The reproduction script compares all ten files for three presets against checked-in outputs and a fresh JSON replay: 60 file comparisons. Only the declared creation timestamp is excluded from scenario-envelope equality. Reproduction and AppTests block outbound sockets.
 
 ## Fresh environment procedure
 
@@ -41,7 +31,7 @@ uv run --offline pytest -q --junitxml=artifacts/tests.xml
 uv run --offline streamlit run app.py --server.address 127.0.0.1
 ```
 
-For a cache-only install add `--offline` to `uv sync`; Python and dependency wheels must already be available. CI performs the same validations in one Ubuntu job. Local checks are executed; remote GitHub Actions and hosted startup are not claimed because nothing has been published.
+For a cache-only install add `--offline` to `uv sync`; Python and dependency wheels must already be available. CI performs the same validations in one Ubuntu job. The public Linux CI and hosted checks are recorded below.
 
 ## Performance protocol
 
@@ -58,11 +48,11 @@ Engine mode warms imports and one baseline evaluation, times three 65-policy dem
 
 Four views are inspected at laptop dimensions, including the full Decision header at scroll position zero. Presentation-only corrections provide clearance below Streamlit's toolbar, smaller headings, human-readable cost legend names, comma-separated whole-dollar costs, and one-decimal unused-paid percentages. Large ledgers retain horizontal scrolling and full-precision exports; advanced controls remain in expanders.
 
-Warnings and evidence classifications remain visible. Missing B300 price stays unavailable. The source/licensing audit verifies all 41 manifest entries, pinned upstream licenses and supplementary license hash. Credential-pattern and local-home-path scans, local Markdown link checks, and review of unsupported production/procurement/endorsement claims are included. Frozen third-party files and historical specification prose are retained verbatim and attributed, rather than rewritten as current project claims.
+Warnings and evidence classifications remain visible. Missing B300 price stays unavailable. The source/licensing audit verifies all 41 manifest entries, pinned upstream licenses and supplementary license hash. Credential-pattern and local-home-path scans, local Markdown link checks, and review of unsupported production/procurement/endorsement claims are included. Frozen third-party files are retained verbatim and attributed. Historical requirements retain their technical content; development-only handoff instructions are omitted from the public copies.
 
-## Package 9 final gate — PASS
+## Historical reproducibility validation
 
-Clean Python 3.12.14 environment, macOS 26.3.1 arm64, uv 0.12.19. **120 passed, zero failures/errors/skips, in 120.39 seconds**. Lint, formatting, 41-artifact source validation, offline catalog rebuild, all 60 export comparisons, final network-blocked four-view AppTest, and the repository-review script passed. All 57 protected engine/data/scenario hashes match. Full [test cases](validation/package9-tests.xml) and [machine-readable measurements](validation/package9.json) are retained.
+Clean Python 3.12.14 environment, macOS 26.3.1 arm64, uv 0.12.19. **120 passed, zero failures/errors/skips, in 120.39 seconds**. Lint, formatting, 41-artifact source validation, offline catalog rebuild, all 60 export comparisons, final network-blocked four-view AppTest, and the repository-review script passed. All 57 protected engine/data/scenario hashes match. Full [test cases](validation/reproducibility-tests.xml) and [machine-readable measurements](validation/reproducibility-validation.json) are retained.
 
 | Measured operation | Seconds |
 |---|---:|
@@ -82,14 +72,24 @@ Engine peak RSS: **66.8 MiB**. Final AppTest-process peak RSS: **233.4 MiB**. Fi
 A real Streamlit server from the clean virtualenv was opened locally and all four views inspected. AppTest emits its normal bare-mode `missing ScriptRunContext` startup warning; no app exception occurred. No network access is needed after install; source hyperlinks and later package installation are separate. The first offline interpreter-discovery failure and its PATH resolution are disclosed above.
 
 
-## Package 10 final gate — PASS
+## Production validation
 
-Resumed the existing deployment-readiness work after Package 9 passed; Package 9 was not repeated or revised. A separate clean source copy matched all 143 working project files before the final validation records were added. Its new Python 3.12.14 virtualenv was installed from the locked, populated offline cache with `--no-dev`. All **42 production packages were compatible**. `scripts/smoke_app.py` rendered the editable `app.py` entrypoint with sockets blocked, no app exception and all seven download controls. No development dependency was needed for this production smoke test.
+A separate clean source copy matched all 143 working project files before the final validation records were added. Its new Python 3.12.14 virtualenv was installed from the locked, populated offline cache with `--no-dev`. All **42 production packages were compatible**. `scripts/smoke_app.py` rendered the editable `app.py` entrypoint with sockets blocked, no app exception and all seven download controls. No development dependency was needed for this production smoke test.
 
 The development group was then installed in that clean environment for final regression: **120 passed in 265.65 seconds, zero failures/errors/skips** (15 UI and 105 engine/source/export tests). Lint and formatting passed. All 41 frozen source artifacts and 57 protected engine/data/scenario hashes passed. The catalog rebuilt offline. The generated pinned production requirements matched the checked-in file byte for byte. All three presets matched their fixtures and exported-JSON replays with network blocked: **60 file comparisons in 63.218 seconds**. Separate sessions, unavailable inputs, invalid edits, source visibility and the decision frontier remain covered by the passing AppTests. Existing source-age and historical-snapshot labels remain intact.
 
-Full [test cases](validation/package10-tests.xml) and [machine-readable results](validation/package10.json) are retained. The final documentation and repository review passed. No analytical code, methodology, economic assumptions, source data, policy logic or UI changed in Package 10; dependency versions and the requirements export are unchanged. MIT licensing and third-party notices from Package 9 are preserved.
+Full [test cases](validation/production-tests.xml) and [machine-readable results](validation/production-validation.json) are retained. The final documentation and repository review passed. No analytical code, methodology, economic assumptions, source data, policy logic or UI changed during this production-only check; dependency versions and the requirements export are unchanged. MIT licensing and third-party notices from the prior review are preserved.
 
-The interrupted dependency check initially used an unwritable default uv cache; pointing it to the existing writable task cache resolved that execution setup issue. AppTest's normal bare-mode `missing ScriptRunContext` warning remains non-failing. The full-suite timing is a validation runtime, not a new isolated product-performance benchmark; Package 9's measured performance record remains unchanged.
+The interrupted dependency check initially used an unwritable default uv cache; pointing it to the existing writable task cache resolved that execution setup issue. AppTest's normal bare-mode `missing ScriptRunContext` warning remains non-failing. The full-suite timing is a validation runtime, not a new isolated product-performance benchmark; the earlier measured performance record remains unchanged.
 
-The deployment guide and CI production smoke gate are prepared for Python 3.12 and the root `app.py` entrypoint. **No repository was published, no visibility was changed, and no application was deployed.** The first Linux CI run and actual hosted build/smoke test necessarily remain pending explicit publication/deployment approval. Hosted concurrency, resource limits and host-managed telemetry have not been validated by local tests. The original source-transfer, quote, power, delivery and demand uncertainties remain limitations on economic conclusions.
+## Linux reproducibility and hosted verification
+
+[Main validation](https://github.com/RithvikK26/ai-compute-economics/actions/runs/36474909100) passed on Linux after the deterministic PV reduction correction: **124 tests and five complete reproduction runs**. The fix addresses 1–4 ULP platform-dependent reductions, with a maximum observed analysis difference of $0.000000008. Winners, ties, thresholds and all decision-surface winners were unchanged. The integrity record identifies the one corrected engine file; all other 56 original protected hashes remain unchanged. Reproduction failures now retain generated files and comparison diagnostics as CI artifacts.
+
+The [public application](https://ai-compute-economics-ln4kzm3c2kn74qbpntdomz.streamlit.app) passed hosted smoke testing on October 2, 2026: three presets, all four views, unavailable B300 pricing, JSON replay, seven downloads, historical-snapshot disclosure, conditional language and source visibility. Replayed results were byte-identical across all nine non-envelope files; input and output hashes also matched. Laptop rendering was inspected. Private host build logs were not inspected in that public-app review. Hosted concurrency, resource ceilings and telemetry remain outside this test.
+
+## Presentation regression validation
+
+October 3, 2026, local Python 3.12: **126 tests passed, zero failures/errors/skips**, including 17 application tests. Formatting, lint, dependency consistency, frozen source integrity, offline catalog construction, repository review, all 60 fixture/replay comparisons, deterministic-reduction decision equivalence and the network-blocked production entrypoint smoke test passed. All 96 protected engine, data, scenario, example, fixture and dependency files were byte-identical to the pre-polish baseline.
+
+The four views and three presets were inspected at 1440 × 1000. Missing B300 pricing, invalid-input retention, JSON import/replay and all seven downloads passed. The downloaded audit ZIP matched all nine non-envelope example files byte for byte; the scenario envelope matched apart from its declared creation timestamp. Copy and table formatting changed only presentation. An earlier isolated application-test run encountered three timeouts; those cases and the subsequent complete suite passed without changing application code or timeout limits.

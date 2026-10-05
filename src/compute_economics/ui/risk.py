@@ -4,6 +4,7 @@ import streamlit as st
 
 from compute_economics.ui.charts import capacity_chart, finish, policy_label
 from compute_economics.ui.common import policy_picker, show_chart
+from compute_economics.ui.presentation import assumption_value, display_table, label
 
 
 def stress_table(paths):
@@ -43,7 +44,6 @@ def stress_table(paths):
 
 def render(bundle):
     a = bundle.analysis
-    st.caption("03 / RISK & CAPACITY · FIXED FLEET, CHANGING DEMAND")
     st.header("Does the plan still work?")
     stress = a["fixed_policy_demand_stress"]
     if stress:
@@ -83,7 +83,7 @@ def render(bundle):
             "Availability reduces productive capacity. Utilization measures realized execution. Spare nodes remain paid and powered; shortages are never stacked as delivered output."
         )
         with st.expander("Block-level billing and capacity"):
-            st.dataframe(block[block.policy_id == selected], hide_index=True, width="stretch")
+            display_table(block[block.policy_id == selected])
     st.subheader("Sensitivity of the fixed policy")
     sensitivity = a["sensitivities"]
     rows = []
@@ -98,11 +98,11 @@ def render(bundle):
                 fig.add_trace(
                     go.Scatter(
                         x=[p["fixed_pv_usd"] for p in points],
-                        y=[name.replace("_", " ")] * len(points),
+                        y=[label(name)] * len(points),
                         mode="lines+markers",
-                        name=name,
+                        name=label(name),
                         showlegend=False,
-                        customdata=[p["value"] for p in points],
+                        customdata=[assumption_value(name, p["value"]) for p in points],
                         hovertemplate="Tested value: %{customdata}<br>Fixed-policy PV: %{x:$,.0f}<extra></extra>",
                         line_color="#087F72",
                     )
@@ -118,11 +118,10 @@ def render(bundle):
             "sensitivity_fixed",
         )
         st.caption(
-            sensitivity["influence_definition"]
-            + " Fleet size is fixed here; the decision surface separately reoptimizes it."
+            "Shows the selected policy’s present-value cost at each tested assumption value. Fleet size stays fixed; the decision surface selects a new fleet at each point. These are scenario tests, not confidence intervals."
         )
         with st.expander("Sensitivity values and reoptimized outcomes"):
-            st.dataframe(frame, hide_index=True, width="stretch")
+            display_table(frame)
     with st.expander("Named adverse cases", expanded=True):
         for name, test in a["named_stresses"].items():
             st.markdown("**" + name.replace("_", " ").title() + "**")

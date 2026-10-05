@@ -1,6 +1,8 @@
-# Deployment readiness and local operation
+# Deployment and local operation
 
-**Prepared for review; not published or deployed.** Package 10 prepares the existing application for Streamlit Community Cloud. No GitHub repository, remote, public URL, credentials or hosted app has been created. Publication and deployment remain separate approval gates.
+The [public repository](https://github.com/RithvikK26/ai-compute-economics) is deployed from `main` to [Streamlit Community Cloud](https://ai-compute-economics-ln4kzm3c2kn74qbpntdomz.streamlit.app). Linux [validation CI](https://github.com/RithvikK26/ai-compute-economics/actions/workflows/ci.yml) passes. Hosted smoke tests passed for all three presets, four views, missing B300 pricing, JSON replay and all seven downloads. The application uses the frozen **2026-09-27** evidence snapshot.
+
+The deployment targets **Python 3.12** and root `app.py`. No application secrets, external database or GPU are required. Local production validation used Python 3.12.14; the hosted smoke review did not inspect private build logs, so it does not independently attest the host's patch version or installer log.
 
 ## Tested local path
 
@@ -22,9 +24,9 @@ Open the printed localhost URL. Add `--server.port 8502` if needed. Stop with `C
 
 ## Production-only verification
 
-The Package 10 clean environment was first installed with development dependencies excluded. All 42 installed packages were compatible and the initial app rendered with outbound sockets blocked, including seven download controls. This validates the local production dependency set and editable entrypoint; it is not a hosted deployment test. The final regression results are recorded in [validation.md](validation.md#package-10-final-gate--pass).
+The production-only clean environment was first installed with development dependencies excluded. All 42 installed packages were compatible and the initial app rendered with outbound sockets blocked, including seven download controls. This validates the local production dependency set and editable entrypoint; it is not a hosted deployment test. The final regression results are recorded in [validation.md](validation.md#production-validation).
 
-To repeat the production gate before adding development tools:
+To repeat production validation before adding development tools:
 
 ```sh
 uv sync --locked --no-dev --python 3.12
@@ -32,15 +34,15 @@ uv pip check --python .venv/bin/python
 .venv/bin/python scripts/smoke_app.py
 ```
 
-The smoke test uses Streamlit's bundled AppTest and does not require pytest. CI executes this gate before installing the development group for the full suite.
+The smoke test uses Streamlit's bundled AppTest and does not require pytest. CI runs this check before installing the development group for the full suite.
 
 ## Host configuration
 
-| Item | Prepared value |
+| Item | Configuration |
 |---|---|
 | Repository root | Contents of this project directory, not its parent workspace |
 | Entrypoint | `app.py` |
-| Branch | `main` after an approved repository is created |
+| Branch | `main` |
 | Python | Explicitly select **3.12**; `.python-version` records the local minor version |
 | Primary environment | Root `pyproject.toml` + `uv.lock` |
 | Production installation | `uv sync --locked --no-dev --python 3.12` |
@@ -69,16 +71,13 @@ uv export --locked --no-header --no-dev --no-emit-project --format requirements-
 
 CI verifies exact equality with that export. Community Cloud executes from the repository root and reads `.streamlit/config.toml` there; the supplied paths match that layout. [File organization](https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/file-organization).
 
-## Final publication steps — only after explicit approval
+## Maintenance and troubleshooting
 
-1. Confirm the GitHub owner, repository name and visibility with the author. Run the validation commands above on the exact reviewed files.
-2. From this directory, initialize a local repository if needed (`git init -b main`), review `git status --short --ignored`, stage the project files, inspect `git diff --cached --stat`, and commit. Do not add `.venv`, private scenarios, caches or `artifacts/`.
-3. Create the approved GitHub repository. Add its approved URL as `origin`, then push `main`. Repository creation, visibility changes and `git push` have **not** been performed by this work.
-4. Let the `validate` GitHub Actions job complete successfully on Linux. Local macOS results do not substitute for this first remote run. Fix any platform-specific failure before deploying.
-5. Separately obtain approval for deployment and the intended app visibility. In Community Cloud, choose **Create app**, select the approved repository and `main`, enter `app.py`, and explicitly choose Python **3.12** in Advanced settings. Leave secrets empty. Confirm visibility and deploy only after that approval. [Deployment controls](https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/deploy).
-6. Inspect build logs for the locked dependency versions and successful local-project import. Smoke-test the three presets, four views, missing B300 pricing, downloads and JSON replay on the actual host. Verify the historical snapshot and conditional language remain visible before sharing the URL.
+Keep the host pointed at `RithvikK26/ai-compute-economics`, branch `main`, entrypoint `app.py`, Python **3.12**, with no secrets. The app is public. Changes pushed to the connected branch can trigger a host rebuild; validate the exact revision before publishing changes.
 
-No domain, account authorization, billing action, GitHub remote or deployment automation is preconfigured. The remaining inputs are the approved owner/repository/visibility and host account—not an economic-model redesign.
+Before an update, run the checks above and verify Linux CI. After a rebuild, inspect the host logs for dependency installation and local-project import, then check the three presets, four views, missing-price state, JSON replay and downloads. Keep the historical-snapshot disclosure visible. [Deployment controls](https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/deploy).
+
+If startup fails, inspect the build log first. Confirm Python 3.12, the repository root, bundled evidence files and editable package installation. Do not work around hosting errors by changing economic assumptions, source observations or validated results. Keep the frozen snapshot intact; a future evidence refresh requires a separate version and reconciliation.
 
 ## Resource, state and privacy limits
 
@@ -88,4 +87,4 @@ Local telemetry is disabled in the config. Community Cloud documents host-manage
 
 The full grid runs synchronously per submission. Local measured memory and runtime are in [validation.md](validation.md); concurrent-user load, hosted memory ceilings, availability and cold starts remain unmeasured. Community Cloud can stop apps that exceed account resource limits. Do not infer unlimited capacity or an SLA from local tests. [Resource-limit guidance](https://docs.streamlit.io/knowledge-base/deploy/resource-limits).
 
-No insecure CORS/XSRF bypasses, Docker image, background service or paid dependency have been introduced. If the first approved deployment fails, inspect its logs and revert the offending code/dependency change; do not silently alter economic assumptions or refresh the frozen source snapshot to make a host build pass.
+No insecure CORS/XSRF bypasses, Docker image, background service or paid dependency have been introduced. If a deployment fails, inspect its logs and revert the offending code/dependency change; do not silently alter economic assumptions or refresh the frozen source snapshot to make a host build pass.

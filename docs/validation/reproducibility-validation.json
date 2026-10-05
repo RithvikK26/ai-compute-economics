@@ -1,5 +1,5 @@
 {
-  "gate": "Package 9 PASS",
+  "gate": "Historical reproducibility validation PASS",
   "setup": {
     "fresh_environment": "new virtualenv in a clean source copy",
     "network": "offline",

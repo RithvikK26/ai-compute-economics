@@ -3,13 +3,15 @@
 import streamlit as st
 from pydantic import ValidationError
 
+from compute_economics.ui.presentation import B300_LIMITATION
+from compute_economics.ui.presentation import label as human_label
 from compute_economics.ui.service import PRESETS, candidate, compute_bytes, compute_preset
 
 
 def error_message(exc):
     if isinstance(exc, ValidationError):
         return "\n".join(
-            f"{'.'.join(str(v) for v in e['loc']) or 'Input combination'}: {e['msg']}"
+            f"{' → '.join(human_label(str(v)) for v in e['loc']) or 'Input combination'}: {e['msg']}"
             for e in exc.errors()
         )
     return str(exc)
@@ -61,12 +63,12 @@ def sidebar(bundle):
     updates = {}
     with st.sidebar:
         st.markdown("### Scenario workspace")
-        preset = st.selectbox("Demonstration preset", list(PRESETS), key="preset")
+        preset = st.selectbox("Scenario preset", list(PRESETS), key="preset")
         if st.button("Load preset", key="load_preset", width="stretch"):
             with st.spinner("Loading and evaluating preset…"):
                 publish(compute_preset(preset))
             st.rerun()
-        st.caption("Loading resets all controls. Results remain fixed until you submit changes.")
+        st.caption("Loading a preset resets the controls. Results update after you submit changes.")
         with st.form("scenario_controls"):
             rev = st.session_state.get("revision", 0)
             config = st.selectbox(
@@ -116,7 +118,7 @@ def sidebar(bundle):
                     number(f, label, base, updates)
             with st.expander("B300 price assumption"):
                 st.caption(
-                    "B300 has no observed rental price. Selecting B300 without this explicit override produces unavailable economics."
+                    B300_LIMITATION + " Enter a price and rationale to test an explicit assumption."
                 )
                 price = st.text_input(
                     "Assumed B300 price (USD/node-hour)",
@@ -141,7 +143,10 @@ def sidebar(bundle):
                 st.session_state["input_error"] = error_message(exc)
         with st.expander("Import a saved scenario"):
             uploaded = st.file_uploader(
-                "Versioned JSON · maximum 1 MB", type=["json"], key="scenario_upload"
+                "Versioned JSON · maximum 1 MB",
+                type=["json"],
+                key="scenario_upload",
+                max_upload_size=1,
             )
             if st.button("Import and run", key="import_run"):
                 if uploaded is None:
@@ -224,6 +229,7 @@ def economics_form(bundle):
                 "Hosting mode",
                 ["metered_energy", "all_in_colo"],
                 index=["metered_energy", "all_in_colo"].index(base.hosting_mode),
+                format_func=human_label,
                 key=f"hosting:{st.session_state.get('revision', 0)}",
             )
             st.caption(

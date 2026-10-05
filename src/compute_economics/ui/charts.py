@@ -4,6 +4,8 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
+from compute_economics.ui.presentation import label as human_label
+
 COLORS = {"own": "#087F72", "commit": "#D59635", "on_demand": "#566BC4", "unavailable": "#D7DDE3"}
 
 
@@ -14,7 +16,7 @@ def policy_label(value):
     return (
         "All on-demand"
         if family == "on_demand"
-        else f"{'Own' if family == 'own' else 'Commit'} {nodes} nodes + overflow"
+        else f"{'Own' if family == 'own' else 'Commit'} {nodes} {'node' if nodes == '1' else 'nodes'} + overflow"
     )
 
 
@@ -221,11 +223,16 @@ def capacity_chart(frame):
 
 def cost_chart(policies):
     rows = [
-        dict(policy=policy_label(p["policy_id"]), category=k.replace("_", " ").title(), pv=v)
+        dict(
+            policy=policy_label(p["policy_id"]),
+            category="Electricity" if k == "electricity" else human_label(k),
+            pv=v,
+        )
         for p in policies
         for k, v in p["category_pv_usd"].items()
     ]
     if not rows:
         return None
     fig = px.bar(pd.DataFrame(rows), x="policy", y="pv", color="category", barmode="relative")
+    fig.update_layout(legend_title_text="Cost component")
     return finish(fig, "Present-value cost composition", "Policy", "Present-value cost · USD")

@@ -1,6 +1,6 @@
 # Implemented methodology
 
-The authoritative requirements are [the amended specification](build_specification.md) and [amendment](amendment.md). [The original](original_build_specification.md) preserves the supplied bytes. Economic methodology is unchanged.
+The authoritative requirements are [the amended specification](build_specification.md) and [amendment](amendment.md). [The original design](original_build_specification.md) preserves the prior technical requirements; Git history retains the unedited development document. Economic methodology is unchanged.
 
 Demand is generated once from the preserved 71,892.1 tokens/s teaching scale, 4/8 baseline equivalents, 80%/20% monthly duration blocks and 0.5% monthly growth. Actual UTC month hours include leap February. Demand is immutable across hardware; separate .5/1/1.5 multipliers are deterministic paths, not probabilities.
 

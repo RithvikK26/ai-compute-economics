@@ -21,8 +21,8 @@ jobs:
         run: uv sync --locked --python 3.12
       - name: Check exported requirements
         run: |
-          uv export --locked --offline --no-header --no-dev --no-emit-project --format requirements-txt --output-file /tmp/requirements.txt
-          diff requirements.txt /tmp/requirements.txt
+          uv export --locked --offline --no-header --no-dev --no-emit-project --format requirements-txt --output-file "${RUNNER_TEMP}/compute-requirements.txt"
+          diff requirements.txt "${RUNNER_TEMP}/compute-requirements.txt"
       - name: Lint and formatting
         run: |
           uv run --offline ruff check .
@@ -36,7 +36,7 @@ jobs:
         run: uv run --offline python scripts/review_repository.py
       - name: Unit, integration and Streamlit AppTest
         run: uv run --offline pytest -q
-      - name: Verify decision equivalence against the approved baseline
+      - name: Verify decision equivalence against the numerical baseline
         run: uv run --offline python scripts/verify_reduction_equivalence.py
       - name: Repeat complete export reproduction five times
         run: |

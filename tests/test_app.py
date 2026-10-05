@@ -1,4 +1,4 @@
-"""Package 8 acceptance: real AppTest runs against the stable engine."""
+"""Application acceptance: real AppTest runs against the stable engine."""
 
 import hashlib
 import json
@@ -98,7 +98,7 @@ def test_frontier_spec_and_threshold_visibility():
         "Acquisition and commitment thresholds",
         "Most influential tested assumption",
         "Practical tie set",
-        "Decision-limiting evidence",
+        "Key limitation",
         "Tested reversal",
     ]:
         assert label in text
@@ -110,7 +110,9 @@ def test_frontier_spec_and_threshold_visibility():
     assert any(t.get("name") == "Tested fleet boundaries" and t["x"] for t in fig["data"])
     assert "customdata" in heatmap
     assert "Demand multiplier" in fig["layout"]["xaxis"]["title"]["text"]
-    assert any(m.label == "Demand-path stability" and m.value == "Not stable" for m in at.metric)
+    assert any(
+        m.label == "Demand-path stability" and m.value == "Varies by scenario" for m in at.metric
+    )
 
 
 def test_invalid_edit_keeps_previous_result_and_downloads():
@@ -122,7 +124,7 @@ def test_invalid_edit_keeps_previous_result_and_downloads():
     at.run()
     assert at.session_state["completed"].envelope["run_hash"] == old_hash
     click(at, "Run scenario")
-    assert any("transfer_fraction" in e.value for e in at.error)
+    assert any("Benchmark-to-production transfer factor" in e.value for e in at.error)
     assert at.session_state["completed"].envelope["run_hash"] == old_hash
     assert at.session_state["completed"].files["scenario.json"] == before.files["scenario.json"]
     input_by_label(at, "number_input", "Baseline throughput transfer (0–1)").set_value(0.65)
@@ -273,3 +275,50 @@ def test_imported_scenario_name_is_escaped_in_display():
     assert not at.exception
     assert any(safe_text(label) in caption.value for caption in at.caption)
     assert label not in all_text(at)
+
+
+def test_display_tables_preserve_values_and_explain_units(monkeypatch):
+    from copy import deepcopy
+
+    import pandas as pd
+
+    from compute_economics.ui.presentation import display_table
+
+    rows = [
+        {
+            "bracket": [0.9500000000000001, 1.0],
+            "from": "own:1",
+            "to": "own:2",
+            "fixed_policy_utilization_bracket": [0.8174880792235923, 0.85],
+        }
+    ]
+    before = deepcopy(rows)
+    captured = []
+    monkeypatch.setattr(
+        "compute_economics.ui.presentation.st.dataframe",
+        lambda frame, **kwargs: captured.append(frame),
+    )
+    display_table(pd.DataFrame(rows), axis="demand")
+    assert rows == before
+    shown = captured[0].iloc[0]
+    assert shown["Fixed-capacity utilization"] == "81.7%–85.0%"
+    assert shown["Tested interval"] == "0.95–1×"
+    assert shown["Preferred policy before"] == "Own 1 node + overflow"
+    assert "0000000001" not in captured[0].to_string()
+
+
+def test_public_copy_and_display_do_not_change_export_contract():
+    at = app()
+    bundle = at.session_state["completed"]
+    original = dict(bundle.files)
+    assert at.title[0].value == "Rent, commit, or own AI compute?"
+    assert at.selectbox(key="preset").label == "Scenario preset"
+    assert at.file_uploader(key="scenario_upload").proto.max_upload_size_mb == 1
+    assert bundle.envelope["run_hash"][:12] not in all_text(at)
+    assert "Key limitation:" in all_text(at)
+    assert "spot pricing is not modeled" in all_text(at)
+    assert all("_" not in str(c) for table in at.dataframe for c in table.value.columns)
+    for view in ["Economics", "Risk & Capacity", "Evidence & Methodology"]:
+        at.radio(key="view").set_value(view).run(timeout=90)
+        assert not at.exception
+        assert at.session_state["completed"].files == original
