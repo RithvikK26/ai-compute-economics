@@ -6,6 +6,9 @@ permissions:
   contents: read
 jobs:
   diagnose:
+    strategy:
+      matrix:
+        probe: [1, 2, 3, 4]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,6 +28,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: numerical-causality-evidence
+          name: numerical-causality-evidence-${{ matrix.probe }}
           path: artifacts/
           retention-days: 30
