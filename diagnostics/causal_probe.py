@@ -15,7 +15,7 @@ mode='native'
 def discount(rate,periods):
  key=f'{rate!r}/{periods}'
  native=original_discount(rate,periods)
- trace['discount'][key]={'rate':rate,'periods':periods,'base':1+rate,'exponents':(-np.arange(periods+1)/12).tolist(),'values':native.tolist(),'scalar_pow':[float(1+rate)**float(x) for x in -np.arange(periods+1)/12], 'numpy_scalar_pow':[float(np.power(np.float64(1+rate),np.float64(x))) for x in -np.arange(periods+1)/12]}
+ trace['discount'][key]={'rate':rate,'periods':periods,'base':1+rate,'exponents':(-np.arange(periods+1)/12).tolist(),'values':native.tolist(),'scalar_pow':[float(1+rate)**float(x) for x in -np.arange(periods+1)/12], 'numpy_scalar_pow':[float(np.power(np.float64(1+rate),np.float64(x))) for x in -np.arange(periods+1)/12], 'math_pow':[math.pow(float(1+rate),float(x)) for x in -np.arange(periods+1)/12]}
  if mode in ('discount','both'):return np.array(reference['discount'][key]['values'])
  return native
 
@@ -30,7 +30,7 @@ def demand(run):
 
 e.discount_factors=discount
 w.build_demand=s.build_demand=r.build_demand=demand
-meta={'platform':platform.platform(),'machine':platform.machine(),'python':sys.version,'numpy':np.__version__,'duckdb':duckdb.__version__}
+meta={'platform':platform.platform(),'machine':platform.machine(),'python':sys.version,'numpy':np.__version__,'duckdb':duckdb.__version__,'power_dispatch':np.lib.introspect.opt_func_info(func_name='power')}
 f=io.StringIO()
 with contextlib.redirect_stdout(f): np.show_runtime();np.show_config()
 meta['numpy_runtime']=f.getvalue();(out/'environment.json').write_text(json.dumps(meta,indent=2))

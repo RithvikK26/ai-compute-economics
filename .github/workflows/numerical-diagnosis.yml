@@ -16,11 +16,11 @@ jobs:
           version: '0.12.19'
           python-version: '3.12'
       - run: uv sync --locked --python 3.12
-      - name: Trace and isolate upstream inputs without altering model files
-        run: uv run --offline python diagnostics/causal_probe.py --reference diagnostics/macos-reference.json --output artifacts/causality
+      - name: Capture native power dispatch
+        run: uv run --offline python diagnostics/causal_probe.py --primitives-only --output artifacts/native
       - name: Compare NumPy dispatch with optional SIMD disabled
         env:
-          NPY_DISABLE_CPU_FEATURES: AVX512F,AVX2,FMA3
+          NPY_DISABLE_CPU_FEATURES: X86_V3,X86_V4,AVX512_ICL,AVX512_SPR
         run: uv run --offline python diagnostics/causal_probe.py --primitives-only --output artifacts/without-simd
       - uses: actions/upload-artifact@v4
         if: always()
