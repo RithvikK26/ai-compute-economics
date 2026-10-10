@@ -3,6 +3,7 @@
 import numpy as np
 
 from compute_economics.capacity import dispatch
+from compute_economics.numerics import scalar_power
 from compute_economics.schemas import Policy, PolicyResult, RunInput
 from compute_economics.validation import validate_run
 from compute_economics.workload import DemandTable
@@ -18,7 +19,10 @@ def bounded_ratio(numerator, denominator):
 
 
 def discount_factors(annual_fraction: float, periods: int):
-    return (1 + annual_fraction) ** (-np.arange(periods + 1) / 12)
+    return np.fromiter(
+        (scalar_power(1 + annual_fraction, exponent) for exponent in -np.arange(periods + 1) / 12),
+        dtype=np.float64,
+    )
 
 
 def deterministic_dot(left, right):
