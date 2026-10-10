@@ -34,6 +34,8 @@ jobs:
           uv run --offline compute-economics catalog --output artifacts/catalog.duckdb
       - name: Review documentation and repository hygiene
         run: uv run --offline python scripts/review_repository.py
+      - name: Record native NumPy power dispatch
+        run: uv run --offline python -c 'import numpy as np; print(np.lib.introspect.opt_func_info(func_name="power"))'
       - name: Unit, integration and Streamlit AppTest
         run: uv run --offline pytest -q
       - name: Verify decision equivalence against the numerical baseline
@@ -44,6 +46,11 @@ jobs:
             echo "Reproduction iteration ${iteration}/5"
             uv run --offline python scripts/verify_reproduction.py
           done
+      - name: Verify baseline CPU path in isolated processes
+        run: |
+          env NPY_DISABLE_CPU_FEATURES=X86_V3,X86_V4,AVX512_ICL,AVX512_SPR uv run --offline python -c 'import numpy as np; print(np.lib.introspect.opt_func_info(func_name="power"))'
+          env NPY_DISABLE_CPU_FEATURES=X86_V3,X86_V4,AVX512_ICL,AVX512_SPR uv run --offline pytest -q tests/test_power.py
+          env NPY_DISABLE_CPU_FEATURES=X86_V3,X86_V4,AVX512_ICL,AVX512_SPR uv run --offline python scripts/verify_reproduction.py
       - name: Retain reproduction mismatch evidence
         if: failure()
         uses: actions/upload-artifact@v4

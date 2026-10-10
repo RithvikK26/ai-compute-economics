@@ -258,9 +258,25 @@ def test_ui_has_not_changed_frozen_engine_or_source_data():
     )
     assert approved["file"] == "src/compute_economics/economics.py"
     assert frozen[approved["file"]] == approved["original_sha256"]
+    # The approved scalar-power correction changes only these two implementation files.
+    # Keep the original fixture hashes and every other exact-byte guard intact.
+    power_changes = {
+        "src/compute_economics/economics.py": (
+            "4da12631c7eee084a0ed2271e82f3505244aef88572a931d60f2a7024820e89c",
+            "db9e17f0414877e024cdf1ffd37eba4bfee713296cd48e845aa8d2ba23adef99",
+        ),
+        "src/compute_economics/workload.py": (
+            "8385082326db66de9b919288e8ac5d48f4c913e0ed9bcb045061f3d20849cfd1",
+            "674d0410e55282fc6422cebfedff34df3b9caef3a1a26e8c7d322fc025bcc624",
+        ),
+    }
     for name, expected in frozen.items():
         if name == approved["file"]:
             expected = approved["approved_sha256"]
+        if name in power_changes:
+            previous, current = power_changes[name]
+            assert expected == previous, name
+            expected = current
         assert hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == expected, name
 
 

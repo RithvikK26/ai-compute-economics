@@ -5,6 +5,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from compute_economics.numerics import scalar_power
 from compute_economics.schemas import RunInput
 
 
@@ -77,7 +78,10 @@ def build_demand(run: RunInput) -> DemandTable:
             * run.demand_scale_tokens_s
             * np.tile(run.demand_base_nodes, run.horizon_months)
             * hours
-            * (1 + run.demand_growth_fraction) ** (period - 1)
+            * np.fromiter(
+                (scalar_power(1 + run.demand_growth_fraction, exponent) for exponent in period - 1),
+                dtype=np.float64,
+            )
         )
     tokens = tokens * run.demand_multiplier
     if run.demand_disappointment:
